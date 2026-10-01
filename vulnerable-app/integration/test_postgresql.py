@@ -74,11 +74,13 @@ def test_normalized_uniqueness_and_sql_bypass_rejected(databases):
     app, _ = databases
     with app.transaction() as session:
         session.add(user(username=" Tester "))
-    with pytest.raises(IntegrityError), app.transaction() as session:
+    with pytest.raises(IntegrityError) as rejected, app.transaction() as session:
         session.add(user(username="TESTER"))
         session.flush()
-    with pytest.raises(IntegrityError), app.engine.begin() as connection:
+    assert rejected.value.orig.sqlstate == "23505"
+    with pytest.raises(IntegrityError) as rejected, app.engine.begin() as connection:
         connection.execute(text("UPDATE users SET username = 'UPPERCASE'"))
+    assert rejected.value.orig.sqlstate == "23514"
 
 
 @pytest.mark.parametrize(
@@ -100,8 +102,9 @@ def test_normalized_uniqueness_and_sql_bypass_rejected(databases):
 def test_required_fields_cannot_be_null(databases, table, column):
     app, _ = databases
     seed_demo(app)
-    with pytest.raises(IntegrityError), app.engine.begin() as connection:
+    with pytest.raises(IntegrityError) as rejected, app.engine.begin() as connection:
         connection.execute(text(f"UPDATE {table} SET {column} = NULL"))
+    assert rejected.value.orig.sqlstate == "23502"
 
 
 @pytest.mark.parametrize(
@@ -161,9 +164,10 @@ def test_ticket_deletion_cascades_comments(databases, loaded):
 def test_referenced_user_cannot_be_deleted(databases, identifier):
     app, _ = databases
     seed_demo(app)
-    with pytest.raises(IntegrityError), app.transaction() as session:
+    with pytest.raises(IntegrityError) as rejected, app.transaction() as session:
         session.delete(session.get(User, identifier))
         session.flush()
+    assert rejected.value.orig.sqlstate == "23503"
 
 
 def test_seed_is_repeatable_and_hashes_fictitious_passwords(databases):
@@ -294,8 +298,9 @@ def test_runtime_crud_and_updated_timestamp(databases):
 )
 def test_runtime_ddl_and_migration_access_denied(databases, statement):
     app, _ = databases
-    with pytest.raises(DBAPIError), app.engine.begin() as connection:
+    with pytest.raises(DBAPIError) as rejected, app.engine.begin() as connection:
         connection.execute(text(statement))
+    assert rejected.value.orig.sqlstate == "42501"
 
 
 def test_role_limits_and_future_grants(databases):
