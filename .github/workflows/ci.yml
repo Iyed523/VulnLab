@@ -38,11 +38,11 @@ jobs:
       - name: Check installed dependencies
         run: uv pip check
       - name: Lint
-        run: uv run --locked ruff check .
+        run: uv run --locked ruff check --config pyproject.toml . ../scripts ../tests/ci
       - name: Check formatting
-        run: uv run --locked ruff format --check .
+        run: uv run --locked ruff format --check --config pyproject.toml . ../scripts ../tests/ci
       - name: Check installation
-        run: uv run --locked pytest
+        run: uv run --locked pytest tests ../tests/ci
       - name: Build wheel
         run: uv run --locked --group build -- uv build --wheel --no-build-isolation
 

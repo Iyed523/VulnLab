@@ -5,6 +5,35 @@ import subprocess
 import time
 from pathlib import Path
 
+PROBE_IMAGE = "python:3.13.15-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26"
+
+# Only socket failures explicitly handled here can produce a denial result.
+NETWORK_PROBE = r"""
+import errno
+import json
+import socket
+import sys
+
+print("socket-ready", flush=True)
+try:
+    with socket.create_connection((sys.argv[1], 8088), timeout=2):
+        result = "connected"
+except TimeoutError:
+    result = "connection-timeout"
+except OSError as error:
+    expected = {
+        errno.ECONNREFUSED: "connection-refused",
+        errno.ENETUNREACH: "network-unreachable",
+        errno.EHOSTUNREACH: "host-unreachable",
+    }
+    if error.errno not in expected:
+        raise
+    result = expected[error.errno]
+print(json.dumps({"result": result}))
+sys.exit(0 if result == "connected" else 10)
+"""
+
+
 COMPOSE = [
     "docker",
     "compose",
@@ -21,9 +50,43 @@ def run(args, *, stdin=None):
     ).stdout.strip()
 
 
+def execute_probe(command, service):
+    try:
+        return subprocess.run(command, text=True, capture_output=True, timeout=15)
+    except subprocess.TimeoutExpired as error:
+        raise AssertionError(
+            f"{service}: global process timeout; no network denial proven"
+        ) from error
+    except OSError as error:
+        raise AssertionError(f"{service}: probe tool execution failed") from error
+
+
+def classify_witness_result(result, service):
+    """Reject execution errors even when their exit code resembles a denial."""
+    lines = result.stdout.splitlines()
+    if result.stderr or len(lines) != 2 or lines[0] != "socket-ready":
+        raise AssertionError(f"{service}: probe/tool error or invalid output")
+    try:
+        payload = json.loads(lines[1])
+    except ValueError as error:
+        raise AssertionError(f"{service}: invalid probe result") from error
+    if payload == {"result": "connected"} and result.returncode == 0:
+        raise AssertionError(f"{service}: local witness reachable; blocking failed")
+    expected = (
+        "connection-refused",
+        "connection-timeout",
+        "network-unreachable",
+        "host-unreachable",
+    )
+    for outcome in expected:
+        if payload == {"result": outcome} and result.returncode == 10:
+            return outcome
+    raise AssertionError(f"{service}: unexpected probe result/code; no denial proven")
+
+
 def verify_network_witness():
     """Témoin dédié joignable du proxy ; aucun tiers ne sert de cible."""
-    image = "python:3.13.15-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26"
+    image = PROBE_IMAGE
     container_id = run(
         [
             "docker",
@@ -64,6 +127,7 @@ def verify_network_witness():
         address = info["NetworkSettings"]["Networks"]["vulnlab-vulnerable_ingress"][
             "IPAddress"
         ]
+        run([*COMPOSE, "exec", "-T", "proxy", "sh", "-c", "command -v wget"])
         for _attempt in range(10):
             result = subprocess.run(
                 [
@@ -88,28 +152,41 @@ def verify_network_witness():
         else:
             raise AssertionError("Positive control cannot reach local witness")
         for service in ("app", "db", "redis"):
-            if service == "app":
-                command = [
+            target = run([*COMPOSE, "ps", "-q", service])
+            assert target, f"Missing container: {service}"
+            # Reuse the pinned witness image, without modifying service images.
+            probe = run(
+                [
+                    "docker",
+                    "create",
+                    "--network",
+                    f"container:{target}",
+                    "--user",
+                    "65534:65534",
+                    "--read-only",
+                    "--cap-drop",
+                    "ALL",
+                    "--security-opt",
+                    "no-new-privileges:true",
+                    "--memory",
+                    "64m",
+                    "--cpus",
+                    "0.5",
+                    "--pids-limit",
+                    "32",
+                    PROBE_IMAGE,
                     "python",
                     "-c",
-                    f"import socket; socket.create_connection(('{address}',8088),timeout=2)",
+                    NETWORK_PROBE,
+                    address,
                 ]
-            else:
-                command = [
-                    "timeout",
-                    "3",
-                    "bash",
-                    "-c",
-                    f"echo > /dev/tcp/{address}/8088",
-                ]
-            result = subprocess.run(
-                [*COMPOSE, "exec", "-T", service, *command],
-                capture_output=True,
-                timeout=6,
             )
-            assert result.returncode in (1, 124), (
-                f"Unexpected witness result: {service}"
-            )
+            try:
+                result = execute_probe(["docker", "start", "-a", probe], service)
+                outcome = classify_witness_result(result, service)
+                print(f"Witness {service}: socket available; {outcome}")
+            finally:
+                run(["docker", "rm", "-f", probe])
         print(
             "Witness: positive proxy access; app/db/redis denied. Proxy egress remains possible."
         )
