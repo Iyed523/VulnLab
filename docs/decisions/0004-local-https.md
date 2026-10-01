@@ -13,3 +13,5 @@ Ingress est conservé pour la publication loopback ; frontend et backend restent
 Les tests Python métier ne sont pas étendus. Les contrôles d’infrastructure existants sont conservés et complétés pour TLS, permissions, capabilities et écritures. Docker Desktop demeure inaccessible ; les preuves Linux CI ne se substituent pas à une validation Windows Docker.
 
 Voir [docker.md](../docker.md) pour procédures, sources, proposition de restriction et résultats réels. Aucun métier, session, service public, changement d’image ou fusion n’est introduit.
+
+Résultats : [CI b3190fd](https://github.com/Iyed523/VulnLab/actions/runs/36919627007) verte sur les trois jobs, avec tests TLS et témoins exécutés. Le proxy accède au témoin ingress, les services internes sont refusés ; le filtrage global du proxy demeure une limite. Localement, Python et certificat sont vérifiés, le moteur Docker reste inaccessible. [PR #2](https://github.com/Iyed523/VulnLab/pull/2) en brouillon et dépendante du socle. La validation Product Owner n’est pas anticipée.

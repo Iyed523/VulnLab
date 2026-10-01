@@ -35,3 +35,5 @@ Références : [ADR initial](decisions/0001-architecture.md), [architecture](arc
 M3-Git : code publié, [PR brouillon #1](https://github.com/Iyed523/VulnLab/pull/1) ouverte, trois jobs CI réussis sur `4a82ae2`, protections de main et squash merge configurés et vérifiés via API. Aucune fusion. Voir [git-workflow.md](git-workflow.md). M3 et M3-Git sont validées selon le cadrage M4.
 
 M4 dépend de chore/bootstrap-lab au commit 15284a8 et de la PR #1 non fusionnée ; la branche dédiée est codex/m4-local-https. La PR M4 cible ce socle et devra cibler main après sa fusion autorisée. Voir [ADR M4](decisions/0004-local-https.md) et [docker.md](docker.md). Le filtrage exhaustif des sorties du proxy reste une décision ouverte, sans modification globale du poste.
+
+[PR M4 #2](https://github.com/Iyed523/VulnLab/pull/2) brouillon dépendante du socle ; [CI b3190fd](https://github.com/Iyed523/VulnLab/actions/runs/36919627007) verte sur Python Windows/Linux et Docker Linux. M4 reste soumise à revue, avec sortie possible du proxy et Docker Desktop non vérifié.

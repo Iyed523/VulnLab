@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1, M2, M3 et M3-Git validées ; M4 soumise à revue.** La fabrique Flask technique expose uniquement `GET /healthz`. Les trois jobs du socle M3 ont réussi ; M4 prépare HTTPS et ses contrôles supplémentaires. Docker Desktop local reste non vérifié. Aucune fonctionnalité métier ni vulnérabilité volontaire n’est implémentée. Les limites d’isolation sont décrites dans la documentation Docker.
+**M1, M2, M3 et M3-Git validées ; M4 soumise à revue.** La fabrique Flask technique expose uniquement `GET /healthz`. Les trois jobs du socle M3 ont réussi ; La CI M4 b3190fd a également réussi, avec HTTPS et ses contrôles supplémentaires. Docker Desktop local reste non vérifié. Aucune fonctionnalité métier ni vulnérabilité volontaire n’est implémentée. Les limites d’isolation sont décrites dans la documentation Docker.
 
 ## Deux versions prévues
 
@@ -70,3 +70,5 @@ VulnLab/
 La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M1 à M3-Git sont validées selon le cadrage M4. La branche `codex/m4-local-https` dépend du socle `chore/bootstrap-lab` (PR #1 non fusionnée). M4 reste soumise à revue ; M5 n’est pas commencée.
 
 L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local demeure inaccessible. Les clés, outils, caches et environnements ne sont pas versionnés.
+
+La [PR M4 #2](https://github.com/Iyed523/VulnLab/pull/2) est ouverte en brouillon vers le socle. La [CI M4 vérifiée](https://github.com/Iyed523/VulnLab/actions/runs/36919627007) passe sur les trois jobs ; les limites Docker Desktop et de sorties du proxy restent explicites.
