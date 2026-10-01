@@ -72,6 +72,30 @@ Les tickets -2001/-2002 appartiennent à Alice/Bob ; les commentaires -3001/-300
 
 Les tests unitaires et les 25 contrôles existants tournent sous Windows/Linux. Les tests d'intégration dans `vulnerable-app/integration` tournent seulement sur PostgreSQL réel via `compose.ci.yaml`, dans la base/volume jetables du runner. Ils exigent le marqueur explicite `VULNLAB_EPHEMERAL_DB=ci-only`, ne passent pas silencieusement et n'utilisent pas SQLite. **Ne jamais utiliser ce profil CI sur un volume local existant.** Downgrade, effacement des fixtures de test et ré-upgrade sont destructifs et limités à cette base CI. Aucune commande downgrade n'est ajoutée au CLI opérateur.
 
-La CI conserve Python Windows, Python Linux et Docker Linux, construit les images sans les publier, vérifie migration et cohérence, puis contraintes, relations, cascades, UTC, rollback, seed, CRUD/DDL et grants futurs. Les contrôles HTTPS/réseau M4.1 restent exécutés. L'image de test contient Pytest ; l'image runtime conserve uniquement les dépendances d'exécution. Aucun port de stockage supplémentaire. Docker Desktop local reste inaccessible et les sorties possibles du proxy demeurent une limite. Les résultats réels de livraison seront consignés après exécution de la CI.
+La CI conserve Python Windows, Python Linux et Docker Linux, construit les images sans les publier, vérifie migration et cohérence, puis contraintes, relations, cascades, UTC, rollback, seed, CRUD/DDL et grants futurs. Les contrôles HTTPS/réseau M4.1 restent exécutés. L'image de test contient Pytest ; l'image runtime conserve uniquement les dépendances d'exécution. Aucun port de stockage supplémentaire. Docker Desktop local reste inaccessible et les sorties possibles du proxy demeurent une limite.
+
+Livraison vérifiée sur `05d9819` : [trois jobs verts](https://github.com/Iyed523/VulnLab/actions/runs/36925249274). Chaque job Python exécute 41 tests (quatre applicatifs conservés, 21 témoins réseau conservés, 16 unités M5). Docker exécute 55 tests PostgreSQL supplémentaires : migrations/cohérence dans la fixture obligatoire, contraintes, FK et suppressions, UTC, rollback, peuplement API et CLI répétés/collisions, droits CRUD, refus DDL et grants futurs. Les refus sont classés par SQLSTATE exact (42501 permissions, 23502 nullabilité, 23503 FK, 23505 unicité, 23514 check, 22001 longueur VARCHAR), sans assimiler une erreur de syntaxe au résultat attendu. Soit 96 cas distincts, les 41 premiers étant répétés sur deux systèmes.
+
+Le job Docker construit la wheel installée non éditable, démarre les services, réexécute explicitement le provisioning sans doublons, upgrade depuis la base neuve, check, puis downgrade/ré-upgrade dans la base éphémère uniquement. Après les tests, HTTPS et toutes les assertions M4.1 passent : contrôle positif du proxy, `network-unreachable` pour les trois espaces réseau internes, absence d'identifiants de maintenance dans app, droits/écritures/SQL conservés. Le nettoyage des conteneurs, réseaux et volume jetable CI réussit. Aucun volume local n'a été touché ; la procédure de maintenance d'un volume M4 Windows est documentée mais non exécutée sur ce poste.
+
+Commandes locales réellement réussies depuis la racine :
+
+```powershell
+& .tools/uv/uv.exe sync --locked --group build --project vulnerable-app
+& .tools/uv/uv.exe pip check --python vulnerable-app/.venv/Scripts/python.exe
+& vulnerable-app/.venv/Scripts/python.exe -m pytest vulnerable-app/tests tests/ci
+& vulnerable-app/.venv/Scripts/ruff.exe check --config vulnerable-app/pyproject.toml vulnerable-app scripts tests/ci
+& vulnerable-app/.venv/Scripts/ruff.exe format --check --config vulnerable-app/pyproject.toml vulnerable-app scripts tests/ci
+& .tools/uv/uv.exe build vulnerable-app --python vulnerable-app/.venv/Scripts/python.exe --wheel --no-build-isolation --offline
+docker --config .tools/docker-config compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci --profile tools config --quiet
+& .tools/actionlint/actionlint.exe -shellcheck= -pyflakes= .github/workflows/ci.yml
+git diff --check
+```
+
+Résultats Windows : 41 tests, Ruff/formatage, 30 distributions compatibles, wheel hors ligne, Compose/actionlint et 72 liens documentaires locaux valides. Les variables de session/cache Python dédiées restent celles du [guide de développement](development.md). Les fichiers non suivis ont été examinés avant ajout ; outils, caches et certificats privés restent ignorés.
+
+Difficultés corrigées : première CI refusée par le tri d'import dépendant du répertoire de lancement (known-first-party explicite), et deux tests attendant IntegrityError plutôt que DataError pour une longueur VARCHAR excessive (SQLSTATE 22001 exigé). Une tentative locale de réinstallation éditable hors ligne échouait sans editables dans l'environnement non isolé ; la synchronisation verrouillée normale avec accès PyPI a réussi, sans ajout arbitraire de dépendance. Une construction depuis la racine sans sélectionner le Python du projet ne trouvait pas Hatchling ; la commande explicite ci-dessus réussit. Aucun échec n'a été masqué et aucune contrainte SQL n'a été assouplie.
+
+La [PR M5 #3](https://github.com/Iyed523/VulnLab/pull/3) reste en brouillon vers `codex/m4-local-https`, dépendante des PR #2/#1 non fusionnées. Le commit documentaire de bilan est soumis aux mêmes trois jobs avant remise. Revue du Team Lead et validation du Product Owner restent attendues ; aucune mission suivante n'est commencée.
 
 Voir l'[ADR M5](decisions/0005-data-foundation.md) pour les versions, sources et décisions.
