@@ -120,3 +120,7 @@ Contrôles du dépôt : 28 fichiers versionnables non suivis examinés, 52 liens
 Le moteur inaccessible empêche : construction Docker, installation non éditable dans l’image finale, démarrage, HTTP traversant Nginx, healthchecks réels, ports/réseaux effectifs, utilisateurs et écritures, attributs SQL réels, communications internes et arrêt de pile. Aucune ressource Docker n’a été créée par la mission, aucun volume n’a été supprimé ; les ressources préexistantes n’ont pas pu être inventoriées.
 
 Les réseaux `internal` restreignent déclarativement les communications ; aucune absence de sortie réseau n’est affirmée. Les contrôles complémentaires sous Docker Desktop, HTTPS local et hôtes distincts relèvent de M4. HTTP local n’est qu’une étape technique avant toute authentification ou session. L’isolation des conteneurs ne garantit pas celle du navigateur.
+
+## Complément M3-Git : première CI Linux
+
+La [première exécution GitHub](https://github.com/Iyed523/VulnLab/actions/runs/36854637686) a validé Compose et construit l’image applicative sur Linux. Le démarrage a échoué, donc les vérifications HTTP, réseaux, utilisateurs et SQL n’ont pas été exécutées. Les diagnostics ont été conservés dans les logs et le nettoyage ciblé a réussi. L’accès aux logs nécessite une session GitHub authentifiée (API non authentifiée refusée avec 403). Le défaut reste à diagnostiquer, aucune validation d’exécution n’est revendiquée. Les jobs Python Windows et Linux ont réussi. Les limites locales Docker Desktop restent inchangées.

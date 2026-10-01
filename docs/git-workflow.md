@@ -30,3 +30,11 @@ Après une fusion autorisée et réalisée, synchroniser localement `main` avec 
 Au démarrage : dépôt local sans commit ni remote, dépôt GitHub public et vide, identité Git existante, GitHub CLI sans session authentifiée. L’authentification GitHub est nécessaire pour la PR et les réglages. Le commit minimal 4b7f0c4 a été publié sur main avec l’authentification Git existante. La configuration safe.directory nécessaire au processus hors sandbox a été passée par commande, sans changer la configuration globale. La connexion GitHub CLI reste nécessaire pour la PR et les protections ; leurs résultats ne sont pas encore revendiqués.
 
 M1 et M2 sont validées ; M3 reste soumise à revue. Un résultat Docker Linux en CI ne validera pas automatiquement Docker Desktop sur le poste local. M4 n’est pas commencée.
+
+## Première publication et exécution
+
+- `4b7f0c4` : commit minimal réel sur `main`, README d’amorçage et `.gitignore`, créé avec un index temporaire ; fichiers de travail conservés.
+- `6437535` : socles M1–M3 et contrôles CI publiés sur `chore/bootstrap-lab`.
+- [Exécution initiale](https://github.com/Iyed523/VulnLab/actions/runs/36854637686) : Python Linux réussi ; Docker Linux a construit l’image mais échoué au démarrage. Les diagnostics et le nettoyage ciblé ont réussi. Python Windows et Python Linux ont tous deux réussi.
+
+La lecture des journaux Docker a été refusée par l’API non authentifiée (403). La PR brouillon et les réglages GitHub restent à effectuer après connexion de GitHub CLI ; aucun résultat ou protection n’est annoncé par anticipation. La publication Git a utilisé le gestionnaire d’identifiants existant sans lecture ni affichage de jeton.

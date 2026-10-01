@@ -32,4 +32,4 @@ Les versions Python, uv, Flask, Pytest, Ruff et Hatchling ainsi que le verrou et
 
 Références : [ADR initial](decisions/0001-architecture.md), [architecture](architecture.md), [autorisations](authorization-matrix.md), [sécurité locale](lab-safety.md).
 
-M3-Git : le socle minimal est publié sur [Iyed523/VulnLab](https://github.com/Iyed523/VulnLab). La CI prévoit les contrôles Python Windows/Linux et Docker Linux ; leurs résultats et la PR restent à confirmer. Voir [git-workflow.md](git-workflow.md). M3 demeure soumise à revue.
+M3-Git : le socle minimal est publié sur [Iyed523/VulnLab](https://github.com/Iyed523/VulnLab). La CI prévoit les contrôles Python Windows/Linux et Docker Linux ; la première exécution a réussi pour Python Windows et Linux, mais Docker Linux a échoué au démarrage après construction. La PR et les protections restent bloquées par la connexion GitHub CLI nécessaire au diagnostic. Voir [git-workflow.md](git-workflow.md). M3 demeure soumise à revue.

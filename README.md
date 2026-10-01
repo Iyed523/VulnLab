@@ -67,4 +67,4 @@ VulnLab/
 
 La progression se fait par missions, avec revue du Team Lead et validation du Product Owner avant la suivante. M1 et M2 sont validées selon le cadrage reçu. M3 est livrée pour revue, avec les contrôles Docker d’exécution bloqués ; M4 n’est pas commencée. Les outils locaux, environnements et wheels sont exclus de Git.
 
-Le socle minimal est publié sur [GitHub](https://github.com/Iyed523/VulnLab). La branche `chore/bootstrap-lab` prépare la revue du travail complet et les contrôles Python Windows/Linux et Docker Linux. Les résultats CI seront consignés après exécution réelle.
+Le socle minimal est publié sur [GitHub](https://github.com/Iyed523/VulnLab). La branche `chore/bootstrap-lab` prépare la revue du travail complet et les contrôles Python Windows/Linux et Docker Linux. La première CI a réussi pour Python Windows et Linux ; Docker Linux a construit l’image mais échoué au démarrage. Le diagnostic, la PR et les protections restent en attente d’authentification GitHub CLI. Voir le guide Git pour les résultats réels.
