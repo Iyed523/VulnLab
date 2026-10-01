@@ -25,6 +25,7 @@ VulnLab/
 ├── AGENTS.md
 ├── .gitignore
 ├── compose.vulnerable.yaml
+├── compose.ci.yaml (tests PostgreSQL sur base jetable CI seulement)
 ├── .env.example
 ├── .dockerignore
 ├── docker/vulnerable/ (Dockerfile, nginx.conf et initdb/01-role.sh)
@@ -35,8 +36,10 @@ VulnLab/
 │   ├── .python-version
 │   ├── pyproject.toml
 │   ├── uv.lock
-│   ├── src/vulnlab_vulnerable/__init__.py
-│   └── tests/ (test_packaging.py et test_health.py)
+│   ├── src/vulnlab_vulnerable/ (fabrique, database, models, passwords, seed, CLI)
+│   ├── alembic.ini et migrations/
+│   ├── integration/ (tests PostgreSQL réels)
+│   └── tests/ (packaging, health et unités de données)
 ├── secure-app/README.md
 └── docs/
     ├── architecture.md
@@ -50,7 +53,8 @@ VulnLab/
         ├── 0001-architecture.md
         ├── 0002-python-tooling.md
         ├── 0003-local-docker.md
-        └── 0004-local-https.md
+        ├── 0004-local-https.md
+        └── 0005-data-foundation.md
 ```
 
 ## Documents de référence

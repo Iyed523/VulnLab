@@ -1,5 +1,9 @@
 """Real PostgreSQL semantics, role privileges and transaction atomicity."""
 
+import os
+import subprocess
+import sys
+
 import pytest
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
@@ -176,6 +180,43 @@ def test_seed_is_repeatable_and_hashes_fictitious_passwords(databases):
         assert session.get(User, -1001).password_hash == first
         assert first.startswith("$argon2id$")
         assert verify_password(first, "demo-Alice-only!")
+
+
+def test_seed_cli_repeated_without_credentials_in_output(databases):
+    app, _ = databases
+    for _ in range(2):
+        result = subprocess.run(
+            [sys.executable, "-m", "vulnlab_vulnerable.cli", "seed"],
+            text=True,
+            capture_output=True,
+            timeout=30,
+        )
+        assert result.returncode == 0
+        assert result.stdout.strip() == "Database command seed completed"
+        assert not result.stderr
+        assert os.environ["DB_PASSWORD"] not in result.stdout
+        assert os.environ["MIGRATION_DB_PASSWORD"] not in result.stdout
+    with app.transaction() as session:
+        assert session.scalar(select(func.count()).select_from(User)) == 3
+
+
+def test_seed_cli_collision_is_explicit_and_atomic(databases):
+    app, _ = databases
+    with app.transaction() as session:
+        session.add(user(username="bob"))
+    result = subprocess.run(
+        [sys.executable, "-m", "vulnlab_vulnerable.cli", "seed"],
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode == 1
+    assert "username collision; no data overwritten" in result.stderr
+    assert not result.stdout
+    assert os.environ["DB_PASSWORD"] not in result.stderr
+    with app.transaction() as session:
+        assert session.scalar(select(func.count()).select_from(User)) == 1
+        assert session.get(User, -1001) is None
 
 
 @pytest.mark.parametrize(
