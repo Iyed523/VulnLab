@@ -1,13 +1,13 @@
 # Roadmap
 
-Chaque étape nécessite une revue du Team Lead et une validation du Product Owner avant de passer à la suivante. M1 a été revue et validée par le Product Owner selon le cadrage M2. M2 est également validée. M3 est soumise à revue, avec les contrôles Docker d’exécution bloqués ; M4 n’est pas commencée.
+Chaque étape nécessite une revue du Team Lead et une validation du Product Owner avant de passer à la suivante. M1 a été revue et validée par le Product Owner selon le cadrage M2. M2 est également validée. M3 est soumise à revue, avec Docker Linux vérifié en CI et Docker Desktop local non vérifié ; M4 n’est pas commencée.
 
 | Étape | Contenu | État à la livraison M3 |
 | --- | --- | --- |
 | 1 | Conception | Validée par le Product Owner selon le cadrage fourni |
 | 2 — M1 | Dépôt et documentation de référence | Validés |
-| 3 — M2 | Environnement Python, sélection des versions, dépendances et CI minimale | Validée ; workflow GitHub non exécuté |
-| 4 — M3 puis M4 | Premier socle Docker ; puis HTTPS et vérifications complémentaires d’isolation | M3 préparée et soumise à revue, moteur inaccessible ; M4 à venir |
+| 3 — M2 | Environnement Python, sélection des versions, dépendances et CI minimale | Validée ; Python Windows/Linux réussis en CI |
+| 4 — M3 puis M4 | Premier socle Docker ; puis HTTPS et vérifications complémentaires d’isolation | M3 soumise à revue, Docker Linux réussi en CI ; Docker Desktop non vérifié ; M4 à venir |
 | 5 | Données fictives et socle fonctionnel | À venir |
 | 6 | Tests communs et référence Git traçable du socle | À venir |
 | 7 | Introduction des vulnérabilités une par une | À venir |
@@ -32,4 +32,4 @@ Les versions Python, uv, Flask, Pytest, Ruff et Hatchling ainsi que le verrou et
 
 Références : [ADR initial](decisions/0001-architecture.md), [architecture](architecture.md), [autorisations](authorization-matrix.md), [sécurité locale](lab-safety.md).
 
-M3-Git : le socle minimal est publié sur [Iyed523/VulnLab](https://github.com/Iyed523/VulnLab). La CI prévoit les contrôles Python Windows/Linux et Docker Linux ; la première exécution a réussi pour Python Windows et Linux, mais Docker Linux a échoué au démarrage après construction. La PR et les protections restent bloquées par la connexion GitHub CLI nécessaire au diagnostic. Voir [git-workflow.md](git-workflow.md). M3 demeure soumise à revue.
+M3-Git : code publié, [PR brouillon #1](https://github.com/Iyed523/VulnLab/pull/1) ouverte, trois jobs CI réussis sur `4a82ae2`, protections de main et squash merge configurés et vérifiés via API. Aucune fusion. Voir [git-workflow.md](git-workflow.md). M3 demeure soumise à revue.

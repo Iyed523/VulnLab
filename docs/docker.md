@@ -2,7 +2,7 @@
 
 M1 et M2 sont validées selon le cadrage reçu. M3 prépare uniquement `/healthz` et une pile locale Nginx → Gunicorn/Flask avec PostgreSQL et Redis pour les futurs accès. Aucun métier, session, table ou scénario vulnérable n’est ajouté. `secure-app` reste documentaire.
 
-## État réellement observé le 1 octobre 2026
+## État local observé pendant M3 le 1 octobre 2026
 
 Docker CLI 28.0.4 et Compose v2.34.0-desktop.1 sont installés. Le contexte observé est `default`. Le moteur est inaccessible : le canal Windows `docker_engine` est absent, y compris lors de la vérification autorisée hors sandbox. Aucun processus Docker Desktop ou backend n’a été observé. Aucun écouteur sur 8080 n’a été retourné par l’inspection locale.
 
@@ -109,7 +109,7 @@ Remise à zéro **destructive**, uniquement après décision explicite et vérif
 docker --config .tools/docker-config compose --env-file .env.example -f compose.vulnerable.yaml down --volumes --timeout 20
 ```
 
-## Contrôles exécutés et limites
+## Contrôles exécutés pendant M3 et limites locales
 
 Synchronisation verrouillée du groupe build, contrôle des 19 distributions installées sous Windows, Ruff et formatage réussis, **4 tests collectés et réussis** (3 HTTP techniques, 1 packaging), wheel construite sans isolation de build supplémentaire, configuration Compose valide. Le workflow Python inclut le groupe build et est vérifié avec actionlint. Un défaut initial de formatage du nouveau test a été corrigé par Ruff.
 
@@ -123,4 +123,13 @@ Les réseaux `internal` restreignent déclarativement les communications ; aucun
 
 ## Complément M3-Git : première CI Linux
 
-La [première exécution GitHub](https://github.com/Iyed523/VulnLab/actions/runs/36854637686) a validé Compose et construit l’image applicative sur Linux. Le démarrage a échoué, donc les vérifications HTTP, réseaux, utilisateurs et SQL n’ont pas été exécutées. Les diagnostics ont été conservés dans les logs et le nettoyage ciblé a réussi. L’accès aux logs nécessite une session GitHub authentifiée (API non authentifiée refusée avec 403). Le défaut reste à diagnostiquer, aucune validation d’exécution n’est revendiquée. Les jobs Python Windows et Linux ont réussi. Les limites locales Docker Desktop restent inchangées.
+La [première exécution GitHub](https://github.com/Iyed523/VulnLab/actions/runs/36854637686) a validé Compose et construit l’image applicative sur Linux. Le démarrage a échoué, donc les vérifications HTTP, réseaux, utilisateurs et SQL n’ont pas été exécutées. Les diagnostics ont été conservés dans les logs et le nettoyage ciblé a réussi. L’accès aux logs nécessite une session GitHub authentifiée (API non authentifiée refusée avec 403). Ces résultats initiaux sont remplacés par les contrôles réussis ci-dessous. Les jobs Python Windows et Linux ont réussi. Les limites locales Docker Desktop restent inchangées.
+
+
+## Résultat M3-Git après corrections
+
+La [CI Linux sur 4a82ae2](https://github.com/Iyed523/VulnLab/actions/runs/36857188426) a construit l’image, démarré les quatre services sains et exécuté `python3 scripts/ci/verify_docker.py`. Les inspections confirment les processus principaux non root, racines en lecture seule, no-new-privileges, réseaux attendus et la seule publication effective `127.0.0.1:8080`. HTTP via Nginx donne `/healthz` 200 et une route absente 404 sans traceback. Le rôle SQL applicatif est non administrateur et son authentification réussit ; l’application atteint PostgreSQL et Redis en TCP interne. L’arrêt et le nettoyage ciblé des ressources du runner ont réussi. Python Windows et Linux passent également.
+
+Corrections : entrées tmpfs YAML citées pour préserver leurs virgules ; Gunicorn utilise `--no-control-socket` pour éviter une écriture de socket dans un home absent et en lecture seule ; réseau bridge ingress non interne réservé au proxy, car ses réseaux exclusivement internes empêchaient la publication effective du port. Frontend et backend restent internes ; application et stockages ne sont pas connectés à ingress. Le test conserve l’exigence de liaison loopback exacte.
+
+Limites : ingress peut permettre des sorties du proxy ; leur restriction, HTTPS et les vérifications complémentaires restent en M4. Ces contrôles ne prouvent ni une absence totale de sorties ni une isolation du navigateur. Docker Desktop local, permissions détaillées de chaque montage et comportement complet des capacités restent non vérifiés. Les mentions de blocage et d’absence de commits ci-dessus décrivent la livraison M3 initiale ; M3-Git est désormais publiée sur sa branche de revue. Aucun service ou image n’est déployé ou publié.

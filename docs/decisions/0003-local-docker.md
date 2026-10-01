@@ -1,10 +1,10 @@
 # ADR 0003 — Premier socle Docker local
 
 - Date : 2026-10-01.
-- Statut : M3 soumise à revue ; validation d’exécution bloquée par le moteur Docker inaccessible.
+- Statut : M3 soumise à revue ; exécution Linux vérifiée en CI, Docker Desktop local non vérifié.
 - M1 et M2 : validées selon le cadrage reçu.
 
-La pile est définie dans un fichier Compose explicitement nommé, avec un projet dédié. Seul Nginx publie `127.0.0.1:8080`. Les réseaux internes frontend et backend séparent les flux, sans réseau externe partagé. PostgreSQL possède son volume dédié ; Redis reste volatil.
+La pile est définie dans un fichier Compose explicitement nommé, avec un projet dédié. Seul Nginx publie `127.0.0.1:8080`. Les réseaux internes frontend et backend séparent les flux, sans réseau externe partagé. Un troisième réseau bridge, ingress, est réservé au proxy : Docker n’exposait aucun port lorsque celui-ci était connecté uniquement aux réseaux internes. L’application et les stockages restent exclusivement sur les réseaux internes. Ce réseau autorise potentiellement des sorties du proxy ; leur restriction et leur vérification restent à traiter en M4. PostgreSQL possède son volume dédié ; Redis reste volatil.
 
 Une fabrique Flask expose seulement `/healthz`, qui décrit la disponibilité HTTP du processus. Aucun accès PostgreSQL/Redis ni comportement métier n’est ajouté. Gunicorn 26.2.0 est limité à Linux par un marqueur de dépendance pour préserver l’environnement Windows.
 
@@ -16,4 +16,4 @@ L’application et Nginx utilisent des utilisateurs non root, tous les services 
 
 HTTP local est une étape provisoire. HTTPS, hôtes distincts et vérification complémentaire des sorties réseau restent en M4. Les choix déclaratifs doivent être confrontés aux conteneurs réels avant validation : le moteur Docker n’était pas disponible pendant M3.
 
-Les versions, digests, commandes, droits, résultats et vérifications bloquées sont détaillés dans [docker.md](../docker.md). Aucun service ou image n’est publié, aucun commit ni nettoyage Docker global n’est effectué.
+Les versions, digests, commandes, droits, résultats et limites sont détaillés dans [docker.md](../docker.md). M3-Git publie le code et les commits pour revue, sans publier de service ni d’image. Aucun nettoyage Docker global n’est effectué.

@@ -1,6 +1,6 @@
 # Architecture validée — réalisation future
 
-M1 et M2 sont validées. M3 ajoute une fabrique `create_app`, la route technique `/healthz` et les fichiers Docker pour la première pile ; le moteur Docker inaccessible empêche sa vérification à l’exécution. Les composants métier, modules et flux ci-dessous restent prévus ; aucun comportement métier ni isolation effective n’est vérifié. Les versions d’outillage retenues figurent dans le [guide de développement](development.md).
+M1 et M2 sont validées. M3 ajoute une fabrique `create_app`, la route technique `/healthz` et les fichiers Docker pour la première pile ; son exécution Linux est vérifiée en CI ; Docker Desktop local reste non vérifié. Les composants métier, modules et flux ci-dessous restent prévus ; aucun comportement métier n’est implémenté ; les vérifications d’infrastructure et leurs limites figurent dans docker.md. Les versions d’outillage retenues figurent dans le [guide de développement](development.md).
 
 ## Composants et responsabilités
 
@@ -83,4 +83,4 @@ docs/ (documents actuels ; fiches d’audit et preuves à venir)
 
 Chaque application conservera son environnement `.venv` et son verrou propres, sans workspace uv global. Aucun module métier factice n’est créé pour reproduire l’arborescence future.
 
-Ruff et quatre tests Pytest (installation et contrat HTTP technique) sont opérationnels sous Windows. Le groupe build et Gunicorn Linux sont verrouillés. La pile M3 utilise provisoirement HTTP local ; HTTPS et les hôtes distincts restent prévus pour M4. Voir [docker.md](docker.md) pour la topologie actuelle et les contrôles non exécutés. Les tests HTTP, Playwright et les tests métier seront introduits ultérieurement. Le workflow GitHub Actions vise Windows et Linux, sans déploiement ; il n’a pas été exécuté sur GitHub.
+Ruff et quatre tests Pytest (installation et contrat HTTP technique) sont opérationnels sous Windows. Le groupe build et Gunicorn Linux sont verrouillés. La pile M3 utilise provisoirement HTTP local ; HTTPS et les hôtes distincts restent prévus pour M4. Voir [docker.md](docker.md) pour la topologie actuelle et les contrôles non exécutés. Les tests HTTP, Playwright et les tests métier seront introduits ultérieurement. Le workflow GitHub Actions vise Windows et Linux, sans déploiement ; ses trois jobs ont réussi sur GitHub.
