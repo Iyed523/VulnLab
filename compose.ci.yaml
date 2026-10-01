@@ -1,0 +1,27 @@
+# CI-only overlay: destructive migration tests on this runner's disposable volume.
+services:
+  integration-test:
+    profiles: [ci]
+    image: vulnlab-vulnerable-integration:m5
+    build:
+      context: .
+      dockerfile: docker/vulnerable/Dockerfile
+      target: integration
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
+    networks: [backend]
+    environment:
+      DB_HOST: db
+      DB_NAME: vulnlab
+      DB_USER: vulnlab_app
+      DB_PASSWORD: ${APP_DB_PASSWORD:?Set fictitious APP_DB_PASSWORD}
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Set fictitious MIGRATION_DB_PASSWORD}
+      VULNLAB_EPHEMERAL_DB: ci-only
+    depends_on:
+      db: {condition: service_healthy}

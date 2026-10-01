@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1, M2, M3 et M3-Git validées ; M4 soumise à revue.** La fabrique Flask technique expose uniquement `GET /healthz`. Les trois jobs du socle M3 ont réussi ; La CI M4 b3190fd a également réussi, avec HTTPS et ses contrôles supplémentaires. Docker Desktop local reste non vérifié. Aucune fonctionnalité métier ni vulnérabilité volontaire n’est implémentée. Les limites d’isolation sont décrites dans la documentation Docker.
+**M1 à M4.1 validées ; M5 soumise à revue.** La fabrique Flask expose uniquement `GET /healthz`, sans connexion SQL obligatoire. M5 ajoute les modèles PostgreSQL, migrations explicites et fixtures fictives, sans route métier ni vulnérabilité volontaire. Docker Desktop local reste non vérifié et les sorties possibles du proxy restent une limite. Voir le [guide des données M5](docs/data-foundation.md) pour le schéma, les droits, les procédures et les preuves.
 
 ## Deux versions prévues
 
@@ -55,6 +55,9 @@ VulnLab/
 
 ## Documents de référence
 
+- [Modèles, migrations et fixtures M5](docs/data-foundation.md)
+- [Décision sur le socle persistant](docs/decisions/0005-data-foundation.md)
+
 - [Fonctionnement GitHub et revue par PR](docs/git-workflow.md)
 - [HTTPS local, Docker et limites M4](docs/docker.md)
 - [Installation, commandes et résultats M2](docs/development.md)
@@ -67,7 +70,7 @@ VulnLab/
 - [Roadmap et choix des scénarios](docs/roadmap.md)
 - [Règles des prochaines missions](AGENTS.md)
 
-La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M1 à M3-Git sont validées selon le cadrage M4. La branche `codex/m4-local-https` dépend du socle `chore/bootstrap-lab` (PR #1 non fusionnée). M4 reste soumise à revue ; M5 n’est pas commencée.
+La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M4 et M4.1 sont validées sur `aabc745`. `codex/m5-data-foundation` part de ce socle et dépend de `codex/m4-local-https`, elle-même dépendante de `chore/bootstrap-lab`. Aucune PR n'est fusionnée. M5 attend la revue finale ; aucune mission suivante n'est commencée.
 
 L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local demeure inaccessible. Les clés, outils, caches et environnements ne sont pas versionnés.
 

@@ -8,6 +8,15 @@
 !vulnerable-app/src/
 !vulnerable-app/src/vulnlab_vulnerable/
 !vulnerable-app/src/vulnlab_vulnerable/*.py
+!vulnerable-app/tests/
+!vulnerable-app/tests/*.py
+!vulnerable-app/integration/
+!vulnerable-app/integration/*.py
+!vulnerable-app/migrations/
+!vulnerable-app/migrations/*.py
+!vulnerable-app/migrations/versions/
+!vulnerable-app/migrations/versions/*.py
+!vulnerable-app/alembic.ini
 !docker/
 !docker/vulnerable/
 !docker/vulnerable/Dockerfile

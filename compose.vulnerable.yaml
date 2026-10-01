@@ -43,6 +43,11 @@ services:
     read_only: true
     tmpfs: ["/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
     networks: [frontend, backend]
+    environment:
+      DB_HOST: db
+      DB_NAME: vulnlab
+      DB_USER: vulnlab_app
+      DB_PASSWORD: ${APP_DB_PASSWORD:?Set fictitious APP_DB_PASSWORD}
     depends_on:
       db: {condition: service_healthy}
       redis: {condition: service_healthy}
@@ -68,6 +73,7 @@ services:
       POSTGRES_DB: vulnlab
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set fictitious POSTGRES_PASSWORD}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set fictitious APP_DB_PASSWORD}
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Set fictitious MIGRATION_DB_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --auth-local=scram-sha-256
     volumes:
@@ -80,6 +86,27 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  data-tools:
+    <<: *limits
+    profiles: [tools]
+    image: vulnlab-vulnerable-app:m3
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
+    networks: [backend]
+    environment:
+      DB_HOST: db
+      DB_NAME: vulnlab
+      DB_USER: vulnlab_migrate
+      DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Set fictitious MIGRATION_DB_PASSWORD}
+    volumes:
+      - ./vulnerable-app/migrations:/opt/migrations:ro
+      - ./vulnerable-app/alembic.ini:/opt/alembic.ini:ro
+    entrypoint: [python, -m, vulnlab_vulnerable.cli]
+    command: [upgrade]
+    depends_on:
+      db: {condition: service_healthy}
 
   redis:
     <<: *limits

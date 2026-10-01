@@ -65,9 +65,19 @@ jobs:
         run: openssl verify -CAfile certs/local/vulnerable/server.crt -verify_hostname vulnerable.vulnlab.test certs/local/vulnerable/server.crt
       - name: Build application image
         run: docker compose --env-file .env.example -f compose.vulnerable.yaml build app
+      - name: Build PostgreSQL integration test image
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci build integration-test
       - name: Start dedicated stack
         run: docker compose --env-file .env.example -f compose.vulnerable.yaml up -d --wait --wait-timeout 120
-      - name: Verify local infrastructure
+      - name: Verify explicit provisioning is repeatable
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml exec -T db sh /docker-entrypoint-initdb.d/01-role.sh
+      - name: Run explicit migration and check
+        run: |
+          docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools upgrade
+          docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools check
+      - name: Test against real disposable PostgreSQL
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci run --rm integration-test
+      - name: Verify local infrastructure after database tests
         run: python3 scripts/ci/verify_docker.py
       - name: Preserve failure diagnostics in job logs
         if: failure()
