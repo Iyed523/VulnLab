@@ -1,0 +1,15 @@
+# ADR 0004 — HTTPS local et preuves d’isolation
+
+- Date : 2026-10-01.
+- Statut : M4 soumise à revue du Team Lead et validation du Product Owner.
+- Dépendance : socle M3 validé `15284a8` sur chore/bootstrap-lab, PR #1 non fusionnée.
+
+Décisions : HTTPS sur `127.0.0.1:8443`, hôte unique vulnerable.vulnlab.test, nom secure.vulnlab.test réservé, certificat autosigné dédié avec SAN et confiance explicitement fournie aux tests. Aucune autorité système ou modification hosts n’est installée. Le script refuse de remplacer des fichiers existants, les clés restent ignorées et hors contexte de build.
+
+Nginx rejette les SNI et Host inconnus, supprime le port HTTP publié et conserve une sonde de processus seulement sur le loopback de son conteneur. La vérification HTTPS du runner est distincte de cette sonde. Les montages restent en lecture seule ; le groupe supplémentaire du proxy donne accès à la clé 0640 sans capacités ou privilèges root.
+
+Ingress est conservé pour la publication loopback ; frontend et backend restent internes. Un témoin local vérifie un contrôle positif depuis le proxy avant les refus attendus des services internes. Les sorties possibles du proxy constituent une limite explicite. Une interdiction globale demanderait une politique de filtrage de l’environnement à décider, pas une affirmation fondée sur internal seul.
+
+Les tests Python métier ne sont pas étendus. Les contrôles d’infrastructure existants sont conservés et complétés pour TLS, permissions, capabilities et écritures. Docker Desktop demeure inaccessible ; les preuves Linux CI ne se substituent pas à une validation Windows Docker.
+
+Voir [docker.md](../docker.md) pour procédures, sources, proposition de restriction et résultats réels. Aucun métier, session, service public, changement d’image ou fusion n’est introduit.

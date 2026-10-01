@@ -1,10 +1,10 @@
 # Architecture validée — réalisation future
 
-M1 et M2 sont validées. M3 ajoute une fabrique `create_app`, la route technique `/healthz` et les fichiers Docker pour la première pile ; son exécution Linux est vérifiée en CI ; Docker Desktop local reste non vérifié. Les composants métier, modules et flux ci-dessous restent prévus ; aucun comportement métier n’est implémenté ; les vérifications d’infrastructure et leurs limites figurent dans docker.md. Les versions d’outillage retenues figurent dans le [guide de développement](development.md).
+M1, M2, M3 et M3-Git sont validées selon le cadrage M4. M3 ajoute une fabrique `create_app`, la route technique `/healthz` et les fichiers Docker pour la première pile ; son exécution Linux est vérifiée en CI ; Docker Desktop local reste non vérifié. Les composants métier, modules et flux ci-dessous restent prévus ; aucun comportement métier n’est implémenté ; les vérifications d’infrastructure et leurs limites figurent dans docker.md. Les versions d’outillage retenues figurent dans le [guide de développement](development.md).
 
 ## Composants et responsabilités
 
-Chaque version est un monolithe modulaire Flask, avec rendu serveur Jinja et ressources HTML/CSS locales, sans frontend séparé. Nginx terminera le HTTPS local et transmettra les requêtes à Gunicorn, qui exécutera Flask. PostgreSQL conservera les données métier ; SQLAlchemy assurera leur mapping, psycopg la connexion et Alembic les migrations.
+Chaque version est un monolithe modulaire Flask, avec rendu serveur Jinja et ressources HTML/CSS locales, sans frontend séparé. Nginx est configuré en M4 pour terminer le HTTPS local et transmettra les requêtes à Gunicorn, qui exécutera Flask. PostgreSQL conservera les données métier ; SQLAlchemy assurera leur mapping, psycopg la connexion et Alembic les migrations.
 
 Flask-Login gérera l’identité connectée, Flask-Session les sessions côté serveur dans Redis, Flask-WTF les formulaires et la protection CSRF, Argon2id le hachage des mots de passe. Flask-Limiter utilisera les compteurs Redis. Les autorisations métier resteront des contrôles serveur explicites.
 
@@ -83,4 +83,4 @@ docs/ (documents actuels ; fiches d’audit et preuves à venir)
 
 Chaque application conservera son environnement `.venv` et son verrou propres, sans workspace uv global. Aucun module métier factice n’est créé pour reproduire l’arborescence future.
 
-Ruff et quatre tests Pytest (installation et contrat HTTP technique) sont opérationnels sous Windows. Le groupe build et Gunicorn Linux sont verrouillés. La pile M3 utilise provisoirement HTTP local ; HTTPS et les hôtes distincts restent prévus pour M4. Voir [docker.md](docker.md) pour la topologie actuelle et les contrôles non exécutés. Les tests HTTP, Playwright et les tests métier seront introduits ultérieurement. Le workflow GitHub Actions vise Windows et Linux, sans déploiement ; ses trois jobs ont réussi sur GitHub.
+Ruff et quatre tests Pytest (installation et contrat HTTP technique) sont opérationnels sous Windows. Le groupe build et Gunicorn Linux sont verrouillés. M4 remplace le port utilisateur HTTP par HTTPS loopback 8443 et un hôte attendu unique ; secure.vulnlab.test reste réservé. Une sonde HTTP uniquement sur le loopback interne du proxy complète les tests TLS externes au conteneur. Ingress du proxy reste non interne ; frontend et backend des services restent internes, avec limites de sorties explicites. Voir [docker.md](docker.md) pour la topologie actuelle et les contrôles non exécutés. Les tests HTTP, Playwright et les tests métier seront introduits ultérieurement. Le workflow GitHub Actions vise Windows et Linux, sans déploiement ; ses trois jobs ont réussi sur GitHub.

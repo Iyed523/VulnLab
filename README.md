@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1 et M2 validées ; M3 soumise à revue.** La fabrique Flask technique expose uniquement `GET /healthz`. Python Windows, Python Linux et Docker Linux passent en CI. Docker Desktop local reste non vérifié. Aucune fonctionnalité métier ni vulnérabilité volontaire n’est implémentée. Les limites d’isolation sont décrites dans la documentation Docker.
+**M1, M2, M3 et M3-Git validées ; M4 soumise à revue.** La fabrique Flask technique expose uniquement `GET /healthz`. Les trois jobs du socle M3 ont réussi ; M4 prépare HTTPS et ses contrôles supplémentaires. Docker Desktop local reste non vérifié. Aucune fonctionnalité métier ni vulnérabilité volontaire n’est implémentée. Les limites d’isolation sont décrites dans la documentation Docker.
 
 ## Deux versions prévues
 
@@ -28,6 +28,7 @@ VulnLab/
 ├── .env.example
 ├── .dockerignore
 ├── docker/vulnerable/ (Dockerfile, nginx.conf et initdb/01-role.sh)
+├── scripts/ (génération des certificats et contrôles CI)
 ├── .github/workflows/ci.yml
 ├── vulnerable-app/
 │   ├── README.md
@@ -48,13 +49,14 @@ VulnLab/
     └── decisions/
         ├── 0001-architecture.md
         ├── 0002-python-tooling.md
-        └── 0003-local-docker.md
+        ├── 0003-local-docker.md
+        └── 0004-local-https.md
 ```
 
 ## Documents de référence
 
 - [Fonctionnement GitHub et revue par PR](docs/git-workflow.md)
-- [Pile Docker, commandes et limites M3](docs/docker.md)
+- [HTTPS local, Docker et limites M4](docs/docker.md)
 - [Installation, commandes et résultats M2](docs/development.md)
 - [Décision sur l’outillage Python](docs/decisions/0002-python-tooling.md)
 - [Architecture et modèle métier](docs/architecture.md)
@@ -65,6 +67,6 @@ VulnLab/
 - [Roadmap et choix des scénarios](docs/roadmap.md)
 - [Règles des prochaines missions](AGENTS.md)
 
-La progression se fait par missions, avec revue du Team Lead et validation du Product Owner avant la suivante. M1 et M2 sont validées selon le cadrage reçu. M3 est livrée pour revue, avec Docker Linux vérifié en CI et Docker Desktop local non vérifié ; M4 n’est pas commencée. Les outils locaux, environnements et wheels sont exclus de Git.
+La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M1 à M3-Git sont validées selon le cadrage M4. La branche `codex/m4-local-https` dépend du socle `chore/bootstrap-lab` (PR #1 non fusionnée). M4 reste soumise à revue ; M5 n’est pas commencée.
 
-Le socle minimal est publié sur [GitHub](https://github.com/Iyed523/VulnLab). La branche `chore/bootstrap-lab` prépare la revue du travail complet et les contrôles Python Windows/Linux et Docker Linux. La première CI a réussi pour Python Windows et Linux ; Docker Linux a construit l’image mais échoué au démarrage. Le diagnostic, la PR et les protections restent en attente d’authentification GitHub CLI. Voir le guide Git pour les résultats réels.
+L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local demeure inaccessible. Les clés, outils, caches et environnements ne sont pas versionnés.
