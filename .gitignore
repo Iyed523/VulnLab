@@ -1,0 +1,48 @@
+# Environnements Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+*.egg-info/
+
+# Configuration locale ; les modèles restent versionnables
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Secrets et certificats de développement locaux
+secrets/
+certs/local/
+certificates/local/
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Sorties générées ; ne pas ignorer globalement les images ou preuves
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+test-results/
+playwright-report/
+tmp/
+.tmp/
+*.tmp
+*.log
+Thumbs.db
+.DS_Store
+
+# Outils dédiés au projet et sorties de construction
+/.tools/
+dist/
+build/
