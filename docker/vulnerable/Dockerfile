@@ -21,4 +21,4 @@ WORKDIR /opt
 USER 10001:10001
 EXPOSE 8000
 STOPSIGNAL SIGTERM
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "30", "--graceful-timeout", "15", "--worker-tmp-dir", "/tmp", "--access-logfile", "-", "--error-logfile", "-", "vulnlab_vulnerable:create_app()"]
+CMD ["gunicorn", "--no-control-socket", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "30", "--graceful-timeout", "15", "--worker-tmp-dir", "/tmp", "--access-logfile", "-", "--error-logfile", "-", "vulnlab_vulnerable:create_app()"]

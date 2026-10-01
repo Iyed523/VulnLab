@@ -21,7 +21,7 @@ services:
     volumes:
       - ./docker/vulnerable/nginx.conf:/etc/nginx/nginx.conf:ro
     ports: ["127.0.0.1:8080:8080"]
-    networks: [frontend]
+    networks: [ingress, frontend]
     depends_on:
       app: {condition: service_healthy}
     healthcheck:
@@ -98,6 +98,8 @@ services:
       start_period: 10s
 
 networks:
+  ingress:
+    driver: bridge
   frontend: {internal: true}
   backend: {internal: true}
 volumes:

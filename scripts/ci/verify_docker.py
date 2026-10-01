@@ -23,7 +23,7 @@ def run(args, *, stdin=None):
 
 def main():
     expected = {
-        "proxy": {"vulnlab-vulnerable_frontend"},
+        "proxy": {"vulnlab-vulnerable_ingress", "vulnlab-vulnerable_frontend"},
         "app": {"vulnlab-vulnerable_frontend", "vulnlab-vulnerable_backend"},
         "db": {"vulnlab-vulnerable_backend"},
         "redis": {"vulnlab-vulnerable_backend"},
@@ -63,7 +63,7 @@ def main():
 
     for name in {network for values in expected.values() for network in values}:
         network = json.loads(run(["docker", "network", "inspect", name]))[0]
-        assert network["Internal"], name
+        assert network["Internal"] == (name != "vulnlab-vulnerable_ingress"), name
         assert network["Labels"]["com.docker.compose.project"] == "vulnlab-vulnerable"
 
     volume = json.loads(
