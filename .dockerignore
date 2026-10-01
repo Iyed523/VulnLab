@@ -1,0 +1,13 @@
+# Contexte racine : seuls les fichiers nécessaires à la wheel sont admis.
+**
+!vulnerable-app/
+!vulnerable-app/pyproject.toml
+!vulnerable-app/uv.lock
+!vulnerable-app/.python-version
+!vulnerable-app/README.md
+!vulnerable-app/src/
+!vulnerable-app/src/vulnlab_vulnerable/
+!vulnerable-app/src/vulnlab_vulnerable/*.py
+!docker/
+!docker/vulnerable/
+!docker/vulnerable/Dockerfile

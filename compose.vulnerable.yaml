@@ -1,0 +1,104 @@
+name: vulnlab-vulnerable
+
+x-limits: &limits
+  security_opt: [no-new-privileges:true]
+  mem_limit: 256m
+  cpus: 1.0
+  pids_limit: 128
+  restart: "no"
+  stop_grace_period: 20s
+
+services:
+  proxy:
+    <<: *limits
+    image: nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
+    user: nginx
+    entrypoint: [nginx]
+    command: [-g, "daemon off;"]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp:rw,noexec,nosuid,size=16m,mode=1777]
+    volumes:
+      - ./docker/vulnerable/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports: ["127.0.0.1:8080:8080"]
+    networks: [frontend]
+    depends_on:
+      app: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -T 3 -O - http://127.0.0.1:8080/healthz | grep -q '\"status\":\"ok\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    <<: *limits
+    image: vulnlab-vulnerable-app:m3
+    build:
+      context: .
+      dockerfile: docker/vulnerable/Dockerfile
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp:rw,noexec,nosuid,size=16m,mode=1777]
+    networks: [frontend, backend]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import json,urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3); assert r.status==200 and json.load(r)=={'status':'ok'}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  db:
+    <<: *limits
+    image: postgres:16.15-bookworm@sha256:efedf3595f1d6f415c08568ba171029bf54052e754cc9f030e3f2412b21f3d67
+    mem_limit: 512m
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=1777
+      - /var/run/postgresql:rw,noexec,nosuid,size=16m,mode=3777
+    environment:
+      POSTGRES_USER: vulnlab_init
+      POSTGRES_DB: vulnlab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set fictitious POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set fictitious APP_DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --auth-local=scram-sha-256
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/vulnerable/initdb:/docker-entrypoint-initdb.d:ro
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "PGPASSWORD=$$POSTGRES_PASSWORD psql -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB -tAc 'SELECT 1' | grep -qx 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    <<: *limits
+    image: redis:8.10.2-trixie@sha256:6f81e8915c60b065a524e6967e0ad1c639ba6efa84d669f823683ea04d9150ee
+    user: redis
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/data:rw,noexec,nosuid,size=16m,mode=1777]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set fictitious REDIS_PASSWORD}
+    command: [sh, -c, 'exec redis-server --save "" --appendonly no --protected-mode yes --requirepass "$$REDIS_PASSWORD"']
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping | grep -qx PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  frontend: {internal: true}
+  backend: {internal: true}
+volumes:
+  pgdata:
