@@ -7,6 +7,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
+
 from vulnlab_vulnerable.database import Database, DatabaseConfig
 
 

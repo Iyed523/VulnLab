@@ -3,6 +3,7 @@
 import pytest
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
+
 from vulnlab_vulnerable.models import Comment, Ticket, User
 from vulnlab_vulnerable.passwords import verify_password
 from vulnlab_vulnerable.seed import SeedCollision, seed_demo
@@ -55,10 +56,14 @@ def test_user_constraints(databases, changes):
     with app.transaction() as session:
         session.add(user())
     column, value = next(iter(changes.items()))
-    with pytest.raises(IntegrityError), app.engine.begin() as connection:
+    with pytest.raises(DBAPIError) as rejected, app.engine.begin() as connection:
         connection.execute(
             text(f"UPDATE users SET {column} = :value"), {"value": value}
         )
+    expected = "23502" if value is None else "23514"
+    if column == "display_name" and value is not None and len(value) > 100:
+        expected = "22001"
+    assert rejected.value.orig.sqlstate == expected
 
 
 def test_normalized_uniqueness_and_sql_bypass_rejected(databases):
@@ -115,10 +120,16 @@ def test_required_fields_cannot_be_null(databases, table, column):
 def test_ticket_comment_constraints(databases, table, column, value):
     app, _ = databases
     seed_demo(app)
-    with pytest.raises(IntegrityError), app.engine.begin() as connection:
+    with pytest.raises(DBAPIError) as rejected, app.engine.begin() as connection:
         connection.execute(
             text(f"UPDATE {table} SET {column} = :value"), {"value": value}
         )
+    expected = "23502" if value is None else "23514"
+    if column.endswith("_id") and value is not None:
+        expected = "23503"
+    if column == "title" and value is not None and len(value) > 200:
+        expected = "22001"
+    assert rejected.value.orig.sqlstate == expected
 
 
 @pytest.mark.parametrize("loaded", [False, True])

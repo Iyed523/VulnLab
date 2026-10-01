@@ -3,6 +3,7 @@
 import os
 
 from alembic import context
+
 from vulnlab_vulnerable.database import Database, DatabaseConfig
 from vulnlab_vulnerable.models import Base
 

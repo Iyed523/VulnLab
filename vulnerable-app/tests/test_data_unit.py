@@ -2,6 +2,7 @@
 
 import pytest
 from sqlalchemy import event
+
 from vulnlab_vulnerable import create_app
 from vulnlab_vulnerable.database import Database, DatabaseConfig
 from vulnlab_vulnerable.models import User, normalize_username
