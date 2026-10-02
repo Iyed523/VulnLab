@@ -25,7 +25,7 @@ L'inventaire initial du moteur Linux Docker Desktop réussit : sept conteneurs a
 
 La préparation vérifie l'absence du projet/volume M9 et le port 8443 avant toute construction. [Overlay M9](../compose.validation-m9.yaml) : image distincte `vulnlab-m9-validation-app:m8`, projet explicite `vulnlab-m9-validation`, volume propre. Certificats et clé existants à préserver sans remplacement ni affichage. Ne jamais réutiliser les volumes précédents ou exécuter les tests destructifs sur eux.
 
-Incident observé : après l'inventaire réussi, Docker renvoie HTTP 500 sur `/version` et `/containers/json`. La première préparation s'arrête avant création, build ou démarrage M9. À ce stade, le parcours HTTPS Windows et l'infrastructure M8 n'ont donc pas été exécutés en M9 ; ce critère reste à confirmer après rétablissement du moteur. Aucun redémarrage global ou opération sur les autres piles.
+Incident observé : après l'inventaire réussi, Docker renvoie HTTP 500 sur `/version` et `/containers/json`, avec API négociée 1.48 comme avec API 1.45 limitée au processus de diagnostic. La première préparation s'arrête avant création, build ou démarrage M9. Le parcours HTTPS Windows et l'infrastructure M8 n'ont donc pas été exécutés en M9 ; ce critère reste à confirmer après rétablissement du moteur. Aucun redémarrage global ou opération sur les autres piles. Aucune ressource M9 créée à conserver/arrêter. L'état final des sept conteneurs précédents ne peut pas être relu pendant cet incident ; seule l'absence d'opération de notre part et leur inventaire initial sont établis, sans prétendre vérifier un état externe devenu inaccessible.
 
 Procédure préparée depuis la racine (Python local, environnement limité au processus) :
 
@@ -72,7 +72,9 @@ git rev-parse codex/m9-integration-preview^{tree}
 git rev-parse origin/codex/m8-profile-admin^{tree}
 ```
 
-Les SHA et résultats réels de simulation seront consignés après exécution ; ils ne prouvent aucune fusion ou réussite des futures PR reciblées. Les branches `codex/m9-integration-preview` et `codex/m9-pr2-reconciled` à `codex/m9-pr6-reconciled` restent locales.
+Simulation réellement exécutée depuis `origin/main` `4b7f0c4d0ead81dd5bd682703e832bd3917efb4b` : chaque patch s'applique sans conflit, chaque arbre intermédiaire égale sa tête validée. Six squashes locaux : `f8c141c`, `bdea9a1`, `54875a4`, `cbaa0d0`, `359c8ac`, `41b4633`. Les cinq réconciliations préservent leur tête publiée comme parent ; l'avance rapide et le delta propre comparé au main simulé sont vérifiés.
+
+Tête `codex/m9-integration-preview` : `41b463366c0a632afe98c43d8b8c567219483cac`. Arbre final et arbre M8 : **`a91d4664b8ea74467a60860c53c8b9830cbff747`**, identiques ; `git diff --exit-code` retourne 0. Aucune différence à expliquer avec M8. Les fichiers de consolidation M9 sont volontairement hors de cette simulation des six PR ; leur PR dépendante séparée sera traitée après M8 si autorisée. Les branches `codex/m9-integration-preview` et `codex/m9-pr2-reconciled` à `codex/m9-pr6-reconciled` restent locales. Cette preuve ne constitue aucune fusion ou réussite des futures checks reciblés.
 
 ## Référence proposée
 
