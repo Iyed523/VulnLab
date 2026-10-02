@@ -11,3 +11,6 @@ Le [guide de développement](../docs/development.md) fournit les commandes Pytho
 Le comportement de référence tickets/commentaires est implémenté. Les futures faiblesses seront introduites une par une, identifiées, justifiées et testées dans une mission autorisée. Les démonstrations utiliseront uniquement des comptes et données fictifs, sans cibler de tiers. Les preuves XSS resteront locales, sans collecte ni transmission de données.
 
 Consulter l’[architecture](../docs/architecture.md), les [autorisations de référence](../docs/authorization-matrix.md), les [exigences d’isolation](../docs/lab-safety.md) et la [roadmap](../docs/roadmap.md). Les écarts volontaires aux règles de référence devront être explicitement documentés dans les missions futures.
+# Profil et administration M8
+
+Voir les [contrats et procédures M8](../docs/profile-admin.md), la [matrice](../docs/authorization-matrix.md) et l'[ADR 0008](../docs/decisions/0008-profile-admin.md). La migration 0002 exige une reconnexion des anciennes sessions ; aucune migration automatique au démarrage HTTP.

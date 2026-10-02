@@ -58,6 +58,7 @@ class User(Timestamps, Base):
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint("role IN ('user', 'admin')", name="role"),
+        CheckConstraint("session_version >= 0", name="session_version"),
         CheckConstraint("username ~ '^[a-z0-9][a-z0-9_.-]{2,31}$'", name="username"),
         CheckConstraint("length(display_name) BETWEEN 1 AND 100", name="display_name"),
         CheckConstraint(
@@ -70,6 +71,7 @@ class User(Timestamps, Base):
     display_name: Mapped[str] = mapped_column(String(100))
     role: Mapped[str] = mapped_column(String(5), server_default="user")
     active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    session_version: Mapped[int] = mapped_column(Integer, server_default=text("0"))
 
     @validates("username")
     def normalized_username(self, key, value):

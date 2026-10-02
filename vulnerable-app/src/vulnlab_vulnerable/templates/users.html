@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}<h1>Accounts</h1><p>{{ total }} accounts. Page {{ page }}.</p>
+<table><thead><tr><th>ID</th><th>Username</th><th>Display name</th><th>Role</th><th>Active</th><th>Action</th></tr></thead>
+<tbody>{% for user in users %}<tr data-user-id="{{ user.id }}" data-username="{{ user.username }}">
+<td>{{ user.id }}</td><td>{{ user.username }}</td><td>{{ user.display_name }}</td><td>{{ user.role }}</td><td>{{ user.active }}</td>
+<td>{% if user.role == 'user' %}{% if user.active %}<details><summary>Deactivate account</summary><p>This revokes existing sessions.</p>
+<form method="post" action="{{ url_for('accounts.deactivate', user_id=user.id) }}">{{ status_form.csrf_token }} {{ status_form.submit }}</form></details>
+{% else %}<form method="post" action="{{ url_for('accounts.activate', user_id=user.id) }}">{{ status_form.csrf_token }} {{ status_form.submit }}</form>{% endif %}
+{% else %}Administrator status cannot be changed here.{% endif %}</td></tr>{% endfor %}</tbody></table>
+<nav aria-label="Account pages">{% if page > 1 %}<a href="{{ url_for('accounts.users', page=page-1) }}">Previous</a>{% endif %}
+{% if page < max_page and page * page_size < total %}<a href="{{ url_for('accounts.users', page=page+1) }}">Next</a>{% endif %}</nav>{% endblock %}

@@ -10,3 +10,6 @@ dt { font-weight: bold; } dd { margin: .3rem 0 1rem; }
 textarea, select { font: inherit; padding: .6rem; max-width: 100%; width: 100%; box-sizing: border-box; }
 .user-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 details { margin: 1rem 0; } article { border-top: 1px solid #ccd5dc; }
+table { width: 100%; border-collapse: collapse; overflow-wrap: anywhere; }
+th, td { padding: .4rem; border-bottom: 1px solid #ccd5dc; text-align: left; }
+nav { flex-wrap: wrap; }

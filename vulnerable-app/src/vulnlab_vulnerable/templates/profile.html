@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}<h1>Edit your display name</h1>
+<p>Only your display name can be changed (1–100 characters).</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="{{ url_for('accounts.edit') }}">{{ form.csrf_token }}
+{{ form.display_name.label }} {{ form.display_name(maxlength=100, required=true) }}
+{{ form.submit }}</form>{% endblock %}

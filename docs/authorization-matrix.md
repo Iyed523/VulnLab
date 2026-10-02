@@ -1,6 +1,6 @@
-# Autorisations de référence — à implémenter
+# Autorisations de référence
 
-M7 implémente les opérations tickets/commentaires dans `vulnerable-app` conformément à cette matrice ; voir [contrats et preuves M7](tickets-comments.md). Profil, recherche et fonctions administratives restent futurs. Inscription M6 refuse explicitement les champs sensibles, et les comptes désactivés sont invalidés sur les routes auth et tickets. Les mentions « futur » ci-dessous sont le cadrage historique.
+M7 implémente les tickets/commentaires ; M8 ajoute profil et administration minimale dans `vulnerable-app`. Voir les [contrats M7](tickets-comments.md) et [contrats M8](profile-admin.md). La recherche et le cycle de vie des administrateurs restent futurs. Aucun scénario volontairement vulnérable n'est introduit.
 
 Les tickets sont privés. Cette matrice définit le comportement attendu commun ; elle ne constitue pas une preuve de contrôle existant. Les éventuels écarts volontaires du laboratoire devront être associés à leur identifiant et test.
 
@@ -16,12 +16,14 @@ Les tickets sont privés. Cette matrice définit le comportement attendu commun 
 
 L’auteur d’un commentaire est toujours l’utilisateur connecté, même si un administrateur intervient sur le ticket d’autrui. Le propriétaire d’un ticket est immuable. Les champs éditables d’un ticket sont le titre, la description et le statut (`open`, `in_progress`, `closed`), jamais son propriétaire, son identifiant ou ses dates gérées par le serveur.
 
-Les champs éditables du profil devront être définis par une liste explicite lors de la mission fonctionnelle. Par défaut, tout champ absent de cette liste est interdit. Aucun formulaire public ne permet de changer le rôle ou le statut actif ; l’inscription ignore toute prétention à un rôle administrateur et impose `user` côté serveur. Une future commande locale créera les administrateurs fictifs. L’accès administratif ne confère pas implicitement le droit d’éditer le profil d’un tiers.
+Le profil autorise **uniquement `display_name`**, 1–100 caractères sans NUL ; sa cible est la session. `username`, `password`, `password_hash`, `role`, `active`, `id`, `session_version`, `created_at` et `updated_at` sont interdits, comme tout champ inattendu ou dupliqué. L'inscription refuse les champs sensibles et impose `user`. Le seed local M5 crée l'administrateur fictif. Un administrateur ne peut pas éditer le profil d'un tiers.
 
-Pour un utilisateur connecté, un ticket inexistant ou inaccessible produit `404`, y compris lors d’une opération sur ses commentaires, afin de ne pas révéler son existence. Une fonction administrative interdite produit `403`. Le comportement précis de connexion/redirection des visiteurs sera défini dans le contrat HTTP futur, sans exposer de données privées.
+La liste administrative expose uniquement `id`, `username`, `display_name`, `role`, `active`, par pages de 20 ordonnées par identifiant, avec page 1–1000. Seul un administrateur actif peut changer `active` via les deux POST dédiés. La cible est la route ; seules les cibles `role=user` sont autorisées. Modifier le statut d'un administrateur, soi-même inclus, produit 403. Aucun changement de rôle, suppression de compte ou changement de tickets/commentaires. Le statut répété est idempotent ; un compte absent produit 404 après vérification administrative. Les droits sont revérifiés sous verrou SQL dans les transactions d'opération.
+
+Pour un utilisateur connecté, un ticket inexistant ou inaccessible produit `404`, y compris pour ses commentaires. Une fonction administrative interdite produit `403` avec requête valide ; CSRF absent/invalide produit 400. Un visiteur sur une route protégée est redirigé en 303 vers `/login?next=/account` avant CSRF, sans données privées. Aucun changement d'état par GET ; succès POST M8 vers `/account` ou `/admin/users` en 303.
 
 Les contrôles serveur s’appliquent à toutes les routes, listes, recherches et opérations sur les commentaires, sans se limiter aux boutons visibles. L’accès à un commentaire dépend de l’accès à son ticket parent ; un identifiant transmis par le client ne prouve aucun droit. La suppression du ticket entraîne celle de ses commentaires. L’édition ou la suppression individuelle des commentaires n’est pas une fonctionnalité validée à ce stade et ne confère aucun droit implicite.
 
-Les comptes désactivés ne doivent plus accéder aux fonctions authentifiées ; le refus de connexion et l’invalidation des sessions devront être implémentés et testés. Il n’est pas prévu de suppression physique des comptes au départ.
+Chaque route protégée porte le même garde, qui vérifie Redis, l'échéance et l'identité SQL courante. La désactivation M8 incrémente atomiquement `session_version` : les anciens SID sont refusés à leur prochaine requête protégée, même après réactivation. La réactivation ne remet jamais cette version à zéro. Voir la portée et les limites de concurrence dans [M8](profile-admin.md). Aucune suppression physique des comptes.
 
 Voir le [modèle métier](architecture.md) et le [modèle de menace](threat-model.md).
