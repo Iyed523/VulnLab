@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}<h1>Your account</h1><dl>
+<dt>Username</dt><dd>{{ current_user.username }}</dd>
+<dt>Display name</dt><dd>{{ current_user.display_name }}</dd>
+<dt>Role</dt><dd>{{ current_user.role }}</dd></dl>
+<form method="post" action="{{ url_for('auth.logout') }}">{{ logout_form.csrf_token }} {{ logout_form.submit }}</form>
+{% endblock %}
