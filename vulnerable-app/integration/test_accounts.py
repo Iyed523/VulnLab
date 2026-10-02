@@ -367,7 +367,7 @@ def test_rollback_after_flush(auth_app, monkeypatch, operation):
         "/admin/users/-1001/deactivate",
     ],
 )
-@pytest.mark.parametrize("backend", ["sql", "redis"])
+@pytest.mark.parametrize("backend", ["sql", "redis", "redis-open"])
 def test_backend_failure_new_routes(auth_app, monkeypatch, path, backend):
     admin = actor_client(auth_app, "admin")
     token = csrf(admin, "/admin/users")
@@ -382,8 +382,10 @@ def test_backend_failure_new_routes(auth_app, monkeypatch, path, backend):
 
     if backend == "sql":
         monkeypatch.setattr(database, "sessions", fail)
-    else:
+    elif backend == "redis":
         monkeypatch.setattr(auth_app.extensions["auth_redis"], "ping", fail)
+    else:
+        monkeypatch.setattr(auth_app.extensions["auth_redis"], "get", fail)
     response = (
         post(admin, path, {"csrf_token": token})
         if path.endswith(tuple(ACTIONS))
@@ -394,3 +396,13 @@ def test_backend_failure_new_routes(auth_app, monkeypatch, path, backend):
     )
     monkeypatch.setattr(database, "sessions", original)
     assert snapshot(auth_app) == before
+
+
+def test_multiple_old_sessions_revoked_without_prior_replay(auth_app):
+    clients = [actor_client(auth_app), actor_client(auth_app)]
+    assert sid(clients[0]) != sid(clients[1])
+    admin = actor_client(auth_app, "admin")
+    assert status(admin, "deactivate").status_code == 303
+    assert status(admin, "activate").status_code == 303
+    for client in clients:
+        assert client.get("/account", base_url=BASE).status_code == 303

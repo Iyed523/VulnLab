@@ -2,15 +2,16 @@
 
 > **AVERTISSEMENT : laboratoire volontairement vulnérable, exclusivement local, non destiné à la production. Ne jamais publier ni déployer ce service.**
 
-État M7 : tickets privés et commentaires, avec politique propriétaire/administrateur appliquée côté serveur, pagination et transactions. Modèles M5, authentification, sessions Redis et CSRF conservés ; aucune faiblesse volontaire. `GET /healthz` retourne `{"status":"ok"}` et concerne seulement le processus HTTP. Voir les [contrats M7](../docs/tickets-comments.md), le [guide M6](../docs/auth-sessions.md) et le [guide M5](../docs/data-foundation.md).
+État M8 : profil limité à `display_name`, administration minimale et révocation durable des sessions ; tickets/commentaires M7 conservés. Aucune faiblesse volontaire. `GET /healthz` retourne `{"status":"ok"}` et concerne seulement le processus HTTP. Voir les [contrats M8](../docs/profile-admin.md), les [contrats M7](../docs/tickets-comments.md) et le [guide M5](../docs/data-foundation.md).
 
 Le [guide Docker](../docs/docker.md) décrit la pile Nginx/Gunicorn/PostgreSQL/Redis et ses commandes. Le [rapport M6.1](../docs/local-validation-m61.md) distingue les preuves Windows Docker Desktop de la CI Linux ; les sorties possibles du proxy restent une limite. M7 utilise seulement les ressources jetables CI et préserve les piles locales arrêtées.
 
-Le [guide de développement](../docs/development.md) fournit les commandes Python. Les tests M4–M6.1 sont conservés, complétés par les tests M7 unitaires, fonctionnels PostgreSQL/Redis et HTTPS. Ces contrôles ne sont pas un audit de sécurité. M6/M6.1 sont validées ; M7 reste soumise à revue.
+Le [guide de développement](../docs/development.md) fournit les commandes Python. Les tests précédents sont conservés, complétés par les contrôles M8 PostgreSQL/Redis et HTTPS. Ces contrôles ne sont pas un audit de sécurité. M7 est validée ; M8 reste soumise à revue.
 
 Le comportement de référence tickets/commentaires est implémenté. Les futures faiblesses seront introduites une par une, identifiées, justifiées et testées dans une mission autorisée. Les démonstrations utiliseront uniquement des comptes et données fictifs, sans cibler de tiers. Les preuves XSS resteront locales, sans collecte ni transmission de données.
 
 Consulter l’[architecture](../docs/architecture.md), les [autorisations de référence](../docs/authorization-matrix.md), les [exigences d’isolation](../docs/lab-safety.md) et la [roadmap](../docs/roadmap.md). Les écarts volontaires aux règles de référence devront être explicitement documentés dans les missions futures.
-# Profil et administration M8
+
+## Profil et administration M8
 
 Voir les [contrats et procédures M8](../docs/profile-admin.md), la [matrice](../docs/authorization-matrix.md) et l'[ADR 0008](../docs/decisions/0008-profile-admin.md). La migration 0002 exige une reconnexion des anciennes sessions ; aucune migration automatique au démarrage HTTP.
