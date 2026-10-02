@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1 à M7 validées ; M8 soumise à revue.** Le socle ajoute profil limité au nom affiché, liste administrative et statut actif des utilisateurs, avec révocation durable des sessions. Tickets privés, commentaires, sessions Redis et CSRF conservés. Aucune faiblesse volontaire. Voir les [contrats M8](docs/profile-admin.md), les [contrats M7](docs/tickets-comments.md) et le [rapport Docker Desktop M6.1](docs/local-validation-m61.md). `/healthz` reste indépendant des services ; les sorties possibles du proxy restent une limite.
+**M1 à M8 validées ; M9 en consolidation et revue.** Profil limité au nom affiché, administration minimale, révocation durable, tickets privés et commentaires constituent le socle de référence sans faiblesse volontaire. Voir le [rapport et plan d'intégration M9](docs/baseline-consolidation-m9.md), les [contrats M8](docs/profile-admin.md) et les [preuves Windows M6.1](docs/local-validation-m61.md). Les PR restent non fusionnées ; aucun tag créé. `/healthz` reste indépendant des services ; les sorties possibles du proxy restent une limite.
 
 ## Deux versions prévues
 

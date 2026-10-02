@@ -1,5 +1,7 @@
 # Fonctionnement Git et GitHub
 
+État courant M9 : M1–M8 validées, six PR dépendantes non fusionnées. Le [plan exact de squash et réconciliation](baseline-consolidation-m9.md) remplace l'instruction générique de partir de main tant que celui-ci contient uniquement l'amorçage. Main exige les trois checks et le squash ; suppression automatique des branches actuellement activée, à désactiver avec autorisation avant fusion. Les états M3/M4 ci-dessous sont historiques. Aucun reciblage, merge ou tag réalisé en M9.
+
 Le dépôt cible est [Iyed523/VulnLab](https://github.com/Iyed523/VulnLab). M3-Git autorise la publication du code, des commits, une PR brouillon et les protections disponibles. Elle n’autorise aucune fusion ou publication du service.
 
 Pour chaque mission : partir de `main` synchronisée, créer une branche dédiée, effectuer des commits décrivant le travail réel, puis pousser cette branche et ouvrir une PR. Ne jamais reconstruire artificiellement un historique de missions antérieures.
