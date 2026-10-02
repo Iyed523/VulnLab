@@ -25,7 +25,9 @@ from flask_login import (
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from limits.errors import StorageError
 from redis import Redis
+from redis.backoff import NoBackoff
 from redis.exceptions import RedisError
+from redis.retry import Retry
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -101,7 +103,7 @@ def init_auth(app):
             password=app.config["REDIS_PASSWORD"],
             socket_connect_timeout=1,
             socket_timeout=1,
-            retry_on_timeout=False,
+            retry=Retry(NoBackoff(), 0),
         )
         app.extensions["auth_redis"] = client
         app.session_interface = LabRedisSessionInterface(

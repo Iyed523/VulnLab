@@ -35,6 +35,15 @@ def test_missing_configuration_cannot_fall_back_to_client_sessions():
     assert "Set-Cookie" not in health.headers
 
 
+def test_csrf_duration_is_accepted_by_pinned_flask_wtf():
+    from flask_wtf.csrf import generate_csrf, validate_csrf
+
+    app = create_app({"SECRET_KEY": b"fictitious-unit-key-only"})
+    assert app.config["WTF_CSRF_TIME_LIMIT"] == 900
+    with app.test_request_context("/login", base_url="https://vulnerable.vulnlab.test"):
+        validate_csrf(generate_csrf())
+
+
 def test_key_generator_preserves_existing_file(tmp_path):
     script = Path(__file__).parents[2] / "scripts/generate_session_key.py"
     spec = importlib.util.spec_from_file_location("generate_key", script)

@@ -6,6 +6,8 @@ La restriction des sorties n’est pas une garantie globale : app/db/redis reste
 
 ## Exigences pour les missions futures
 
+M6 ajoute le cookie `__Host-vulnlab-session`, les sessions Redis et une clé locale ignorée montée en lecture seule. Les preuves d'expiration, rotation, CSRF et quotas concernent les parcours testés ; elles ne prouvent ni une isolation du navigateur ni une interdiction globale des sorties. Voir [le guide M6](auth-sessions.md). Les clés, cookies, jetons et mots de passe ne doivent pas être capturés dans les preuves ; les logs HTTP sont limités à méthode et statut.
+
 | Domaine | Exigence et vérification future attendue |
 | --- | --- |
 | Données et cibles | Comptes et données exclusivement fictifs ; aucun service tiers utilisé comme cible |
