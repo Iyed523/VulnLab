@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1 à M5 validées ; M6 soumise à revue après vérification.** Le socle ajoute inscription, connexion, compte en lecture seule et déconnexion, avec sessions Redis, CSRF et quotas. Aucune faiblesse volontaire n'est introduite. `/healthz` reste indépendant des services. Voir le [guide M6](docs/auth-sessions.md) et le [guide des données M5](docs/data-foundation.md). Docker Desktop local reste non vérifié et les sorties possibles du proxy restent une limite.
+**M1 à M6 validées ; M6.1 soumise à revue.** Le socle ajoute inscription, connexion, compte en lecture seule et déconnexion, avec sessions Redis, CSRF et quotas. Aucune faiblesse volontaire n'est introduite. `/healthz` reste indépendant des services. Voir le [guide M6](docs/auth-sessions.md), le [rapport Docker Desktop Windows M6.1](docs/local-validation-m61.md) et le [guide des données M5](docs/data-foundation.md). Les sorties possibles du proxy restent une limite.
 
 ## Deux versions prévues
 

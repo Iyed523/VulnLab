@@ -15,6 +15,32 @@ verify = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(verify)
 
 
+@pytest.mark.parametrize(
+    "name", ["securevault", "../vulnlab-test", "vulnlab-test;other"]
+)
+def test_project_rejects_unrelated_or_malformed_names(name):
+    with pytest.raises(ValueError):
+        verify.compose_project(name)
+
+
+def test_dedicated_project_is_accepted():
+    assert verify.compose_project("vulnlab-m61-validation") == "vulnlab-m61-validation"
+
+
+@pytest.mark.parametrize(
+    "sid", ["S-1-1-0", "S-1-5-11", "S-1-5-7", "S-1-5-32-545", "S-1-5-32-546"]
+)
+def test_private_acl_rejects_broad_readers(sid):
+    with pytest.raises(AssertionError, match="Broad Windows reader"):
+        verify.assert_private_acl([{"sid": sid, "allow": True, "rights": 1}])
+
+
+def test_private_acl_requires_evidence_and_accepts_system_access():
+    with pytest.raises(AssertionError, match="Missing Windows ACL"):
+        verify.assert_private_acl([])
+    verify.assert_private_acl([{"sid": "S-1-5-18", "allow": True, "rights": 1}])
+
+
 def result(outcome, code=10, stderr=""):
     return subprocess.CompletedProcess(
         [], code, "socket-ready\n" + json.dumps({"result": outcome}) + "\n", stderr

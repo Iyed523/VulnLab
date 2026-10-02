@@ -1,5 +1,7 @@
 # Docker et HTTPS local — M4 soumise à revue
 
+**M6.1 : Docker Desktop Windows a été vérifié sur une pile dédiée**, puis arrêté en conservant son volume. Les observations Windows, différences de permissions, commandes et limites sont dans [le rapport M6.1](local-validation-m61.md). Les mentions d'inaccessibilité ci-dessous sont le bilan historique M4–M6, pas l'état du moteur lors de M6.1.
+
 M6 : générer également la clé locale avec `python scripts/generate_session_key.py` avant `compose up`. La clé ignorée est montée en lecture seule dans l'application, sans nouveaux privilèges ; voir [authentification et sessions](auth-sessions.md) pour les contrats, les procédures et les résultats. La topologie et les images épinglées restent conservées.
 
 M4/M4.1 sont désormais validées par le Product Owner sur `aabc745`, avec Docker Desktop local non vérifié et sorties possibles du proxy. M5 conserve les protections ci-dessous et ajoute la configuration SQL applicative, le rôle de migration et l'outil ponctuel `data-tools` : voir [données, migrations et volumes existants](data-foundation.md). Le fichier `compose.ci.yaml` est réservé aux tests destructifs sur la base éphémère CI, jamais à un volume local existant.

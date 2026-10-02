@@ -1,6 +1,9 @@
 """Contrôles du laboratoire local du runner, sans sonde extérieure."""
 
 import json
+import os
+import re
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -34,9 +37,21 @@ sys.exit(0 if result == "connected" else 10)
 """
 
 
+def compose_project(value):
+    if not re.fullmatch(r"vulnlab-[a-z0-9][a-z0-9-]*", value):
+        raise ValueError("Invalid VulnLab project name")
+    return value
+
+
+PROJECT = compose_project(
+    os.environ.get("VULNLAB_COMPOSE_PROJECT", "vulnlab-vulnerable")
+)
+
 COMPOSE = [
     "docker",
     "compose",
+    "--project-name",
+    PROJECT,
     "--env-file",
     ".env.example",
     "-f",
@@ -48,6 +63,64 @@ def run(args, *, stdin=None):
     return subprocess.run(
         args, input=stdin, text=True, capture_output=True, check=True, timeout=30
     ).stdout.strip()
+
+
+def assert_private_acl(aces):
+    broad_readers = {"S-1-1-0", "S-1-5-11", "S-1-5-7", "S-1-5-32-545", "S-1-5-32-546"}
+    assert aces, "Missing Windows ACL evidence"
+    assert not any(
+        ace["sid"] in broad_readers and ace["allow"] and ace["rights"] & 1
+        for ace in aces
+    ), "Broad Windows reader ACE on private key"
+
+
+def verify_key_access(service, container_path, host_path):
+    # Append-open only: no bytes written or existing contents truncated.
+    run(
+        [
+            *COMPOSE,
+            "exec",
+            "-T",
+            service,
+            "sh",
+            "-c",
+            f"test -r {container_path} && "
+            f"if (: >> {container_path}) 2>/dev/null; then exit 1; fi",
+        ]
+    )
+    mode = run([*COMPOSE, "exec", "-T", service, "stat", "-c", "%a", container_path])
+    if os.name == "nt":
+        script = r"""
+$ErrorActionPreference = 'Stop'
+$acl = Get-Acl -LiteralPath $env:VULNLAB_ACL_PATH
+$aces = @($acl.Access | ForEach-Object {
+    @{sid=$_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value;
+      allow=($_.AccessControlType -eq 'Allow'); rights=[int]$_.FileSystemRights}
+})
+ConvertTo-Json -InputObject $aces -Compress
+"""
+        evidence = subprocess.run(
+            [
+                shutil.which("pwsh.exe") or "powershell.exe",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                script,
+            ],
+            env=dict(os.environ, VULNLAB_ACL_PATH=str(host_path.resolve())),
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=15,
+        )
+        assert_private_acl(json.loads(evidence.stdout))
+        print(
+            f"{service}: Windows ACL broad-reader check passed; bind mode {mode} is not an NTFS permission proof"
+        )
+    else:
+        assert mode == "640", "Private key permissions too broad"
+        assert host_path.stat().st_mode & 0o007 == 0
+    print(f"{service}: private key readable; actual write-open refused")
 
 
 def execute_probe(command, service):
@@ -93,11 +166,13 @@ def verify_network_witness():
             "run",
             "-d",
             "--name",
-            "vulnlab-vulnerable-m4-witness",
+            f"{PROJECT}-m4-witness",
             "--label",
             "vulnlab.m4.witness=true",
+            "--label",
+            f"vulnlab.validation.project={PROJECT}",
             "--network",
-            "vulnlab-vulnerable_ingress",
+            f"{PROJECT}_ingress",
             "--user",
             "65534:65534",
             "--read-only",
@@ -124,9 +199,7 @@ def verify_network_witness():
     )
     try:
         info = json.loads(run(["docker", "inspect", container_id]))[0]
-        address = info["NetworkSettings"]["Networks"]["vulnlab-vulnerable_ingress"][
-            "IPAddress"
-        ]
+        address = info["NetworkSettings"]["Networks"][f"{PROJECT}_ingress"]["IPAddress"]
         run([*COMPOSE, "exec", "-T", "proxy", "sh", "-c", "command -v wget"])
         for _attempt in range(10):
             result = subprocess.run(
@@ -159,6 +232,8 @@ def verify_network_witness():
                 [
                     "docker",
                     "create",
+                    "--label",
+                    f"vulnlab.validation.project={PROJECT}",
                     "--network",
                     f"container:{target}",
                     "--user",
@@ -196,10 +271,10 @@ def verify_network_witness():
 
 def main():
     expected = {
-        "proxy": {"vulnlab-vulnerable_ingress", "vulnlab-vulnerable_frontend"},
-        "app": {"vulnlab-vulnerable_frontend", "vulnlab-vulnerable_backend"},
-        "db": {"vulnlab-vulnerable_backend"},
-        "redis": {"vulnlab-vulnerable_backend"},
+        "proxy": {f"{PROJECT}_ingress", f"{PROJECT}_frontend"},
+        "app": {f"{PROJECT}_frontend", f"{PROJECT}_backend"},
+        "db": {f"{PROJECT}_backend"},
+        "redis": {f"{PROJECT}_backend"},
     }
     for service, networks in expected.items():
         container_id = run([*COMPOSE, "ps", "-q", service])
@@ -227,18 +302,8 @@ def main():
                 if m["Destination"] == "/run/vulnlab/session-key"
             )
             assert not key_mount["RW"], "Session key mount must be read-only"
-            run(
-                [
-                    *COMPOSE,
-                    "exec",
-                    "-T",
-                    "app",
-                    "sh",
-                    "-c",
-                    "test -r /run/vulnlab/session-key && "
-                    "test ! -w /run/vulnlab/session-key && "
-                    "test $(stat -c %a /run/vulnlab/session-key) = 640",
-                ]
+            verify_key_access(
+                "app", "/run/vulnlab/session-key", Path("secrets/local/session-key")
             )
         assert not host["Privileged"], service
         assert host["ReadonlyRootfs"], service
@@ -297,13 +362,11 @@ def main():
 
     for name in {network for values in expected.values() for network in values}:
         network = json.loads(run(["docker", "network", "inspect", name]))[0]
-        assert network["Internal"] == (name != "vulnlab-vulnerable_ingress"), name
-        assert network["Labels"]["com.docker.compose.project"] == "vulnlab-vulnerable"
+        assert network["Internal"] == (name != f"{PROJECT}_ingress"), name
+        assert network["Labels"]["com.docker.compose.project"] == PROJECT
 
-    volume = json.loads(
-        run(["docker", "volume", "inspect", "vulnlab-vulnerable_pgdata"])
-    )[0]
-    assert volume["Labels"]["com.docker.compose.project"] == "vulnlab-vulnerable"
+    volume = json.loads(run(["docker", "volume", "inspect", f"{PROJECT}_pgdata"]))[0]
+    assert volume["Labels"]["com.docker.compose.project"] == PROJECT
 
     def https(path, host="vulnerable.vulnlab.test", headers=()):
         output = run(
@@ -377,31 +440,9 @@ def main():
         m for m in proxy_info["Mounts"] if m["Destination"] == "/etc/nginx/tls"
     )
     assert not tls_mount["RW"]
-    mode = run(
-        [
-            *COMPOSE,
-            "exec",
-            "-T",
-            "proxy",
-            "stat",
-            "-c",
-            "%a",
-            "/etc/nginx/tls/server.key",
-        ]
+    verify_key_access(
+        "proxy", "/etc/nginx/tls/server.key", Path("certs/local/vulnerable/server.key")
     )
-    assert mode == "640", "Private key permissions too broad"
-    run(
-        [
-            *COMPOSE,
-            "exec",
-            "-T",
-            "proxy",
-            "sh",
-            "-c",
-            "test -r /etc/nginx/tls/server.key && test ! -w /etc/nginx/tls/server.key",
-        ]
-    )
-    assert Path("certs/local/vulnerable/server.key").stat().st_mode & 0o007 == 0
 
     query = (
         "SELECT rolname, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls "

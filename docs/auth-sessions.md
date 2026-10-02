@@ -1,5 +1,7 @@
 # Authentification et sessions M6
 
+M6 est validée par le Product Owner. Le [rapport M6.1](local-validation-m61.md) ajoute les preuves HTTPS réelles depuis Windows vers Docker Desktop, les différences de permissions et l'arrêt ciblé avec volume conservé. Les limites Docker Desktop mentionnées dans le bilan M6 ci-dessous sont historiques ; les sorties du proxy et l'isolation du navigateur restent des limites actuelles.
+
 M5 est validée sur `b6700c2`. M6 ajoute un socle de référence sans faiblesse volontaire, sans route de tickets, sans modification des modèles ou migrations, et sans implémentation dans `secure-app`. La branche `codex/m6-auth-sessions` dépend de `codex/m5-data-foundation`. Sa PR reste en brouillon ; toute fusion et tout reciblage ultérieur exigent une autorisation.
 
 ## Contrats
