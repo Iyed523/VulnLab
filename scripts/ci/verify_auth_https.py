@@ -58,6 +58,119 @@ def token(body):
     return match.group(1)
 
 
+def verify_tickets(client):
+    status, body, _ = client.request("GET", "/tickets/new")
+    assert status == 200
+    status, _, headers = client.request(
+        "POST",
+        "/tickets/new",
+        {
+            "title": "<b>HTTPS private ticket</b>",
+            "description": "<script>local fictitious text</script>",
+            "csrf_token": token(body),
+        },
+    )
+    assert status == 303
+    path = headers["Location"]
+    status, body, _ = client.request("GET", path)
+    assert status == 200 and "&lt;b&gt;HTTPS private ticket&lt;/b&gt;" in body
+    assert "&lt;script&gt;local fictitious text&lt;/script&gt;" in body
+    other = Client()
+    status, body, _ = other.request("GET", "/register")
+    assert status == 200
+    assert (
+        other.request(
+            "POST",
+            "/register",
+            {
+                "username": "m7httpsbob",
+                "display_name": "HTTPS Bob fictitious",
+                "password": "demo-HTTPS-Bob-only!",
+                "csrf_token": token(body),
+            },
+        )[0]
+        == 303
+    )
+    status, body, _ = other.request("GET", "/login")
+    assert status == 200
+    assert (
+        other.request(
+            "POST",
+            "/login",
+            {
+                "username": "m7httpsbob",
+                "password": "demo-HTTPS-Bob-only!",
+                "csrf_token": token(body),
+            },
+        )[0]
+        == 303
+    )
+    status, body, _ = other.request("GET", "/tickets/new")
+    assert status == 200
+    other_token = token(body)
+    assert other.request("GET", path)[0] == 404
+    assert other.request("GET", path + "/edit")[0] == 404
+    for suffix, data in [
+        ("edit", {"title": "Denied", "description": "Local", "status": "closed"}),
+        ("comments", {"content": "Denied"}),
+        ("delete", {}),
+    ]:
+        assert (
+            other.request(
+                "POST", path + "/" + suffix, data | {"csrf_token": other_token}
+            )[0]
+            == 404
+        )
+    assert "HTTPS private ticket" not in other.request("GET", "/tickets")[1]
+    status, _, other_headers = other.request(
+        "POST",
+        "/tickets/new",
+        {
+            "title": "Bob private marker",
+            "description": "Local",
+            "csrf_token": other_token,
+        },
+    )
+    assert status == 303 and client.request("GET", other_headers["Location"])[0] == 404
+    status, body, _ = client.request("GET", path + "/edit")
+    assert status == 200
+    assert (
+        client.request(
+            "POST",
+            path + "/edit",
+            {
+                "title": "Edited HTTPS ticket",
+                "description": "Local",
+                "status": "closed",
+                "csrf_token": token(body),
+            },
+        )[0]
+        == 303
+    )
+    status, body, _ = client.request("GET", path)
+    assert status == 200 and "Edited HTTPS ticket" in body and "Status: closed" in body
+    assert (
+        client.request(
+            "POST",
+            path + "/comments",
+            {"content": "<b>HTTPS comment</b>", "csrf_token": token(body)},
+        )[0]
+        == 303
+    )
+    status, body, _ = client.request("GET", path)
+    assert status == 200 and "&lt;b&gt;HTTPS comment&lt;/b&gt;" in body
+    assert client.request("GET", path + "/delete")[0] == 405
+    assert client.request("POST", path + "/delete", {})[0] == 400
+    assert (
+        client.request("POST", path + "/delete", {"csrf_token": token(body)})[0] == 303
+    )
+    assert client.request("GET", path)[0] == 404
+    assert other.request("GET", other_headers["Location"])[0] == 200
+    print(
+        "HTTPS tickets: create/read/edit/comment/delete, escaping and two-user access denial verified; private values withheld."
+    )
+
+
 def main():
     client = Client()
     assert client.request("GET", "/account")[0] == 303
@@ -101,6 +214,7 @@ def main():
     replay = Client()
     replay.cookie = old
     assert replay.request("GET", "/account")[0] == 303
+    verify_tickets(client)
     assert client.request("GET", "/logout")[0] == 405
     status, body, _ = client.request("GET", "/account")
     assert status == 200 and "&lt;b&gt;HTTPS fictitious&lt;/b&gt;" in body
@@ -116,9 +230,9 @@ def main():
     status, body, _ = client.request("GET", "/login")
     assert status == 200
     csrf = token(body)
-    # First successful login consumed one of five attempts. Forged proxy chains
+    # Two successful logins consumed two of five attempts. Forged proxy chains
     # must not create new IP buckets; nginx replaces them with the actual peer.
-    for index in range(4):
+    for index in range(3):
         assert (
             client.request(
                 "POST",

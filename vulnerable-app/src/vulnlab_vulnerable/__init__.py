@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 
 from .auth import init_auth
 from .database import environment_config, init_database
+from .tickets import blueprint as tickets_blueprint
 
 
 def create_app(config=None) -> Flask:
@@ -15,6 +16,7 @@ def create_app(config=None) -> Flask:
         app.config.update(config)
     init_database(app)
     init_auth(app)
+    app.register_blueprint(tickets_blueprint)
 
     @app.get("/healthz")
     def healthz():

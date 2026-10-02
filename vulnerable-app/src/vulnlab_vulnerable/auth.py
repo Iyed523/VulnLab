@@ -138,8 +138,11 @@ def init_auth(app):
     # Must run before CSRF and before views, including sessions whose cookie was replayed.
     @app.before_request
     def require_auth_backend():
-        if request.endpoint not in AUTH_ENDPOINTS:
+        if request.endpoint not in AUTH_ENDPOINTS and request.blueprint != "tickets":
             return None
+        if request.blueprint == "tickets":
+            # Bound the encoded 10000-character Unicode form without changing auth limits.
+            request.max_content_length = 131072
         if not ready or request.environ.get("vulnlab.session_unavailable"):
             return UNAVAILABLE, 503
         app.extensions["auth_redis"].ping()
@@ -150,6 +153,8 @@ def init_auth(app):
                 # Trigger a fresh SQL active-state check on every auth request.
                 if not current_user.is_authenticated:
                     session.clear()
+        if request.blueprint == "tickets" and not current_user.is_authenticated:
+            return unauthorized()
         return None
 
     CSRFProtect(app)
@@ -171,7 +176,7 @@ def init_auth(app):
 
     @app.after_request
     def private_response(response):
-        if request.endpoint in AUTH_ENDPOINTS:
+        if request.endpoint in AUTH_ENDPOINTS or request.blueprint == "tickets":
             response.headers["Cache-Control"] = "no-store"
         return response
 

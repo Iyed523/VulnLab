@@ -1,5 +1,7 @@
 # Autorisations de référence — à implémenter
 
+M7 implémente les opérations tickets/commentaires dans `vulnerable-app` conformément à cette matrice ; voir [contrats et preuves M7](tickets-comments.md). Profil, recherche et fonctions administratives restent futurs. Inscription M6 refuse explicitement les champs sensibles, et les comptes désactivés sont invalidés sur les routes auth et tickets. Les mentions « futur » ci-dessous sont le cadrage historique.
+
 Les tickets sont privés. Cette matrice définit le comportement attendu commun ; elle ne constitue pas une preuve de contrôle existant. Les éventuels écarts volontaires du laboratoire devront être associés à leur identifiant et test.
 
 | Opération | Non connecté | `user` actif | `admin` actif |

@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block content %}
+<h1>{{ ticket.title }}</h1><p>Status: {{ ticket.status }}</p>
+<p class="user-text">{{ ticket.description }}</p>
+<a href="{{ url_for('tickets.edit', ticket_id=ticket.id) }}">Edit</a>
+<details><summary>Delete this ticket</summary><p>Deleting this ticket permanently deletes its comments.</p>
+<form method="post" action="{{ url_for('tickets.delete', ticket_id=ticket.id) }}">{{ delete_form.hidden_tag() }}{{ delete_form.submit() }}</form></details>
+<h2>Comments ({{ total }})</h2>
+{% for comment in comments %}<article><p>{{ comment.author_name }} — {{ comment.created_at }}</p><p class="user-text">{{ comment.content }}</p></article>{% else %}<p>No comments on this page.</p>{% endfor %}
+<nav>{% if page > 1 %}<a href="{{ url_for('tickets.detail', ticket_id=ticket.id, comments_page=page-1) }}">Previous comments</a>{% endif %}
+{% if page * page_size < total and page < max_page %}<a href="{{ url_for('tickets.detail', ticket_id=ticket.id, comments_page=page+1) }}">Next comments</a>{% endif %}</nav>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="{{ url_for('tickets.comment', ticket_id=ticket.id) }}">{{ comment_form.hidden_tag() }}
+<p>{{ comment_form.content.label }} {{ comment_form.content(required=true, maxlength=5000, rows=4) }}</p>{{ comment_form.submit() }}</form>
+<a href="{{ url_for('tickets.index') }}">Tickets</a>
+{% endblock %}

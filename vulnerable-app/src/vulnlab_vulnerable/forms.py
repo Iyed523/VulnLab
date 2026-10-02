@@ -1,7 +1,7 @@
 """Bound input before Argon2, without accepting account privilege fields."""
 
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, SubmitField
+from wtforms import PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import InputRequired, Length, ValidationError
 
 from .models import normalize_username
@@ -35,3 +35,42 @@ class RegisterForm(LoginForm):
 
 class LogoutForm(FlaskForm):
     submit = SubmitField("Log out")
+
+
+def postgres_text(form, field):
+    if "\x00" in field.data:
+        raise ValidationError("Null characters are not allowed.")
+
+
+class TicketForm(FlaskForm):
+    title = StringField(
+        "Title", validators=[InputRequired(), Length(min=1, max=200), postgres_text]
+    )
+    description = TextAreaField(
+        "Description",
+        validators=[InputRequired(), Length(min=1, max=10000), postgres_text],
+    )
+    submit = SubmitField("Save ticket")
+
+
+class EditTicketForm(TicketForm):
+    status = SelectField(
+        "Status",
+        choices=[
+            ("open", "Open"),
+            ("in_progress", "In progress"),
+            ("closed", "Closed"),
+        ],
+        validators=[InputRequired()],
+    )
+
+
+class CommentForm(FlaskForm):
+    content = TextAreaField(
+        "Comment", validators=[InputRequired(), Length(min=1, max=5000), postgres_text]
+    )
+    submit = SubmitField("Add comment")
+
+
+class DeleteTicketForm(FlaskForm):
+    submit = SubmitField("Confirm deletion of ticket and comments")
