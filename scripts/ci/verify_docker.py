@@ -220,6 +220,26 @@ def main():
                 )
             ), "Maintenance credentials in application environment"
             assert "vulnlab_migrate" not in environment.values()
+            assert environment.get("SESSION_KEY_FILE") == "/run/vulnlab/session-key"
+            key_mount = next(
+                m
+                for m in info["Mounts"]
+                if m["Destination"] == "/run/vulnlab/session-key"
+            )
+            assert not key_mount["RW"], "Session key mount must be read-only"
+            run(
+                [
+                    *COMPOSE,
+                    "exec",
+                    "-T",
+                    "app",
+                    "sh",
+                    "-c",
+                    "test -r /run/vulnlab/session-key && "
+                    "test ! -w /run/vulnlab/session-key && "
+                    "test $(stat -c %a /run/vulnlab/session-key) = 640",
+                ]
+            )
         assert not host["Privileged"], service
         assert host["ReadonlyRootfs"], service
         assert "no-new-privileges" in " ".join(host["SecurityOpt"]), service

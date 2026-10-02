@@ -1,4 +1,4 @@
-"""Application technique locale ; aucun comportement métier."""
+"""Application locale avec authentification de référence."""
 
 from flask import Flask, jsonify
 

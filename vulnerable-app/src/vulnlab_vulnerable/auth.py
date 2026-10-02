@@ -61,7 +61,7 @@ def init_auth(app):
         MAX_CONTENT_LENGTH=8192,
         WTF_CSRF_ENABLED=True,
         WTF_CSRF_SSL_STRICT=True,
-        WTF_CSRF_TIME_LIMIT=timedelta(minutes=15),
+        WTF_CSRF_TIME_LIMIT=900,
     )
     app.config.setdefault("AUTH_SESSION_SECONDS", 1800)
     app.config.setdefault("SESSION_KEY_PREFIX", "vulnlab:session:")
@@ -208,7 +208,12 @@ def init_auth(app):
         if local_destination(destination) is None and destination not in (None, ""):
             return "Redirect destination not allowed.", 400
         if request.method == "POST":
-            if set(request.form) - {"username", "password", "csrf_token", "submit"}:
+            if set(request.form) - {
+                "username",
+                "password",
+                "csrf_token",
+                "submit",
+            } or any(len(request.form.getlist(k)) != 1 for k in request.form):
                 return "Unexpected login fields.", 400
             if not form.validate_on_submit():
                 error, status = "Invalid credentials.", 401

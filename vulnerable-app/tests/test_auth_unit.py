@@ -47,3 +47,13 @@ def test_key_generator_preserves_existing_file(tmp_path):
         module.generate(path)
     assert path.read_bytes() == original
     assert len(original.strip()) == 64
+
+
+@pytest.mark.parametrize("data", [b"\xc0", b"\x90", b"\x80\x04legacy-pickle"])
+def test_session_serializer_rejects_invalid_records(data):
+    import msgspec
+
+    from vulnlab_vulnerable.session_backend import StrictSerializer
+
+    with pytest.raises(msgspec.DecodeError):
+        StrictSerializer().decode(data)

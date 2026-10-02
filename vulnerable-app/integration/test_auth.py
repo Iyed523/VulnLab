@@ -373,10 +373,11 @@ def test_backend_failure_is_controlled_and_health_independent(
         if failure == "redis-open":
             monkeypatch.setattr(auth_app.session_interface.client, "get", reject)
         elif failure == "redis-save":
-            monkeypatch.setattr(auth_app.session_interface.client, "set", reject)
-            # Force a session write by starting a new CSRF context.
+            # Create the logout CSRF context before injecting a failed write.
             response = client.get("/account", base_url=BASE)
             assert response.status_code == 200
+            monkeypatch.setattr(auth_app.session_interface.client, "set", reject)
+            # Force a session write by starting a new CSRF context.
             auth_app.session_interface.client.delete(
                 auth_app.config["SESSION_KEY_PREFIX"] + sid(client)
             )

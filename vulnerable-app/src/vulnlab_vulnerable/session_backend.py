@@ -37,7 +37,7 @@ class StrictSerializer:
         return msgspec.msgpack.encode(dict(session))
 
     def decode(self, data):
-        return msgspec.msgpack.decode(data)
+        return msgspec.msgpack.decode(data, type=dict)
 
 
 class LabRedisSessionInterface(RedisSessionInterface):
