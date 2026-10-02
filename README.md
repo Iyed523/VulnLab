@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1 à M6 validées ; M6.1 soumise à revue.** Le socle ajoute inscription, connexion, compte en lecture seule et déconnexion, avec sessions Redis, CSRF et quotas. Aucune faiblesse volontaire n'est introduite. `/healthz` reste indépendant des services. Voir le [guide M6](docs/auth-sessions.md), le [rapport Docker Desktop Windows M6.1](docs/local-validation-m61.md) et le [guide des données M5](docs/data-foundation.md). Les sorties possibles du proxy restent une limite.
+**M1 à M6.1 validées ; M7 soumise à revue.** Le socle ajoute tickets privés et commentaires avec autorisations propriétaire/administrateur, sessions Redis et CSRF. Aucune faiblesse volontaire n'est introduite. `/healthz` reste indépendant des services. Voir les [contrats M7](docs/tickets-comments.md), le [guide M6](docs/auth-sessions.md) et le [rapport Docker Desktop Windows M6.1](docs/local-validation-m61.md). Les sorties possibles du proxy restent une limite.
 
 ## Deux versions prévues
 
@@ -74,8 +74,8 @@ VulnLab/
 - [Roadmap et choix des scénarios](docs/roadmap.md)
 - [Règles des prochaines missions](AGENTS.md)
 
-La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M4 et M4.1 sont validées sur `aabc745`. `codex/m5-data-foundation` part de ce socle et dépend de `codex/m4-local-https`, elle-même dépendante de `chore/bootstrap-lab`. Aucune PR n'est fusionnée. M6 attend la revue finale ; aucune mission suivante n'est commencée.
+La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M4 et M4.1 sont validées sur `aabc745`. `codex/m5-data-foundation` part de ce socle et dépend de `codex/m4-local-https`, elle-même dépendante de `chore/bootstrap-lab`. Aucune PR n'est fusionnée. M7 attend la revue finale ; aucune mission suivante n'est commencée.
 
-L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local demeure inaccessible. Les clés, outils, caches et environnements ne sont pas versionnés.
+L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local a fait l’objet de la validation M6.1, distincte de la CI M7. Les clés, outils, caches et environnements ne sont pas versionnés.
 
 La [PR M4 #2](https://github.com/Iyed523/VulnLab/pull/2) est ouverte en brouillon vers le socle. La [CI M4 vérifiée](https://github.com/Iyed523/VulnLab/actions/runs/36919627007) passe sur les trois jobs ; les limites Docker Desktop et de sorties du proxy restent explicites.

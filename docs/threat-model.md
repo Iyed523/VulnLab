@@ -1,6 +1,6 @@
 # Modèle de menace préliminaire
 
-Ce document décrit les risques à examiner, sans constat d’audit ni vulnérabilité démontrée. L’application et ses protections ne sont pas encore implémentées. OWASP Top 10:2025 est l’édition de référence ; les correspondances détaillées et fiches d’audit seront produites ultérieurement.
+Ce document décrit les risques à examiner, sans constat d’audit ni vulnérabilité démontrée. M7 implémente le comportement de référence tickets/commentaires ; ses [tests et limites](tickets-comments.md) ne constituent pas un audit exhaustif. OWASP Top 10:2025 est l’édition de référence ; les correspondances détaillées et fiches d’audit seront produites ultérieurement.
 
 ## Actifs
 

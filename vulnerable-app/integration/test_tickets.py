@@ -267,6 +267,23 @@ def test_user_own_edit_comment_and_delete_preserve_other_objects(auth_app):
         assert session.scalar(select(func.count()).select_from(User)) == 3
 
 
+def test_role_is_reloaded_before_ticket_authorization(auth_app):
+    client = actor_client(auth_app, "admin")
+    assert client.get(f"/tickets/{BOB}", base_url=BASE).status_code == 200
+    with auth_app.extensions["database"].transaction() as session:
+        session.get(User, -1003).role = "user"
+    assert client.get(f"/tickets/{BOB}", base_url=BASE).status_code == 404
+    assert "Total visible: 0" in client.get("/tickets", base_url=BASE).get_data(
+        as_text=True
+    )
+    assert (
+        ticket_post(
+            client, f"/tickets/{BOB}/comments", {"content": "Denied"}
+        ).status_code
+        == 404
+    )
+
+
 @pytest.mark.parametrize("operation", ["new", "edit", "delete", "comments"])
 @pytest.mark.parametrize("token", [None, "invalid"])
 def test_csrf_on_every_ticket_post(auth_app, operation, token):
@@ -374,6 +391,9 @@ def test_all_routes_reject_invalid_identity(auth_app, state):
         assert response.headers["Cache-Control"] == "no-store"
     for path in ["/tickets/new", "/tickets/-2001/edit"]:
         assert post(client, path, {}).status_code == 303
+    with auth_app.extensions["database"].transaction() as session:
+        assert session.scalar(select(func.count()).select_from(Ticket)) == 2
+        assert session.scalar(select(func.count()).select_from(Comment)) == 3
 
 
 @pytest.mark.parametrize("failure", ["sql", "redis-open", "redis-ping"])
@@ -418,6 +438,9 @@ def test_backend_failure_denies_all_routes(auth_app, monkeypatch, failure):
         restore_authenticated_session()
         assert post(client, path, {}).status_code == 503
     assert client.get("/healthz", base_url=BASE).get_json() == {"status": "ok"}
+    with auth_app.extensions["database"].engine.connect() as connection:
+        assert connection.scalar(select(func.count()).select_from(Ticket)) == 2
+        assert connection.scalar(select(func.count()).select_from(Comment)) == 3
 
 
 def test_get_and_rollback_never_partially_mutate(auth_app, monkeypatch):
