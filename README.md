@@ -2,7 +2,9 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1 à M8 validées ; M9/M9.1 en consolidation et revue.** Profil limité au nom affiché, administration minimale, révocation durable, tickets privés et commentaires constituent le socle de référence sans faiblesse volontaire. Voir le [rapport et plan d'intégration M9/M9.1](docs/baseline-consolidation-m9.md), les [contrats M8](docs/profile-admin.md) et les [preuves Windows M6.1](docs/local-validation-m61.md). M3 est intégré via PR #8 ; M4 attend revue de sa PR #9 réconciliée, puis les PR dépendantes. Aucun tag créé. `/healthz` reste indépendant des services ; les sorties possibles du proxy restent une limite.
+**M11 — première faiblesse pédagogique VULN-003, en revue.** Un utilisateur actif connecté peut consulter le détail d’un ticket d’autrui, commentaires inclus, en modifiant l’identifiant. Cette branche est volontairement vulnérable : une démonstration verte constate une divulgation, sans validation de sécurité. Liste, comptage et écritures gardent leurs autorisations. Voir [fiche VULN-003](docs/vulnerabilities/VULN-003.md), [matrice](docs/vulnerability-matrix.md) et [audit initial](docs/security-audit.md).
+
+Le socle M10 correct reste au tag annoté `baseline-functional-v1`, sur `bd029b523d1835e737faae51b6c9d5c47d5a6efb`. Aucun tag déplacé, remédiation secure-app, fusion M11 ou déploiement. HTTPS reste exclusivement sur le loopback ; les sorties du proxy et l’isolation du navigateur demeurent des limites.
 
 ## Deux versions prévues
 

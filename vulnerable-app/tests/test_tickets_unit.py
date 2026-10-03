@@ -6,6 +6,8 @@ from werkzeug.exceptions import BadRequest
 from vulnlab_vulnerable import create_app
 from vulnlab_vulnerable.tickets import page_number
 
+pytestmark = pytest.mark.preserved_protection
+
 
 @pytest.mark.parametrize(
     "query",

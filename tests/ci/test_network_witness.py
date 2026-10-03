@@ -8,6 +8,9 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.preserved_protection
+
+
 spec = importlib.util.spec_from_file_location(
     "verify_docker", Path(__file__).parents[2] / "scripts/ci/verify_docker.py"
 )

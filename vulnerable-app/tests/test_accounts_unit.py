@@ -4,6 +4,8 @@ import pytest
 
 from vulnlab_vulnerable import create_app
 
+pytestmark = pytest.mark.preserved_protection
+
 
 def test_every_private_view_declares_protection():
     app = create_app()

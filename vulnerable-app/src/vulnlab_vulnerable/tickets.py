@@ -57,9 +57,15 @@ def new():
 @protected
 def detail(ticket_id):
     page = page_number("comments_page")
-    ticket, comments, total = service.ticket_detail(
-        database(), current_user, ticket_id, page
-    )
+    if request.method == "GET":
+        ticket, comments, total = service.vulnerable_ticket_detail(
+            database(), ticket_id, page
+        )
+    else:
+        # Implicit HEAD retains the baseline authorization contract.
+        ticket, comments, total = service.ticket_detail(
+            database(), current_user, ticket_id, page
+        )
     return render_template(
         "tickets/detail.html",
         ticket=ticket,

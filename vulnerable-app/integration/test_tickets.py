@@ -134,13 +134,13 @@ def test_duplicate_fields_are_rejected(auth_app, operation, field):
 @pytest.mark.parametrize(
     "suffix,method",
     [
-        ("", "GET"),
         ("/edit", "GET"),
         ("/edit", "POST"),
         ("/delete", "POST"),
         ("/comments", "POST"),
     ],
 )
+@pytest.mark.preserved_protection
 def test_inaccessible_and_missing_ticket_identical_404(auth_app, suffix, method):
     client = actor_client(auth_app)
     responses = []
@@ -267,12 +267,14 @@ def test_user_own_edit_comment_and_delete_preserve_other_objects(auth_app):
         assert session.scalar(select(func.count()).select_from(User)) == 3
 
 
+@pytest.mark.preserved_protection
 def test_role_is_reloaded_before_ticket_authorization(auth_app):
     client = actor_client(auth_app, "admin")
     assert client.get(f"/tickets/{BOB}", base_url=BASE).status_code == 200
     with auth_app.extensions["database"].transaction() as session:
         session.get(User, -1003).role = "user"
-    assert client.get(f"/tickets/{BOB}", base_url=BASE).status_code == 404
+    # Baseline detail refusal is intentionally replaced only for GET; writes retain policy.
+    assert client.get(f"/tickets/{BOB}/edit", base_url=BASE).status_code == 404
     assert "Total visible: 0" in client.get("/tickets", base_url=BASE).get_data(
         as_text=True
     )
@@ -360,6 +362,7 @@ def test_unicode_maxima_and_user_comment_author(auth_app):
 
 
 @pytest.mark.parametrize("state", ["visitor", "logout", "expired", "disabled"])
+@pytest.mark.preserved_protection
 def test_all_routes_reject_invalid_identity(auth_app, state):
     client = auth_app.test_client() if state == "visitor" else actor_client(auth_app)
     redis = auth_app.extensions["auth_redis"]
@@ -397,6 +400,7 @@ def test_all_routes_reject_invalid_identity(auth_app, state):
 
 
 @pytest.mark.parametrize("failure", ["sql", "redis-open", "redis-ping"])
+@pytest.mark.preserved_protection
 def test_backend_failure_denies_all_routes(auth_app, monkeypatch, failure):
     client = actor_client(auth_app)
     redis = auth_app.extensions["auth_redis"]

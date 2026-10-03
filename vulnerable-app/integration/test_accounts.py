@@ -18,6 +18,9 @@ from .test_auth import BASE, COOKIE, csrf, post, sid
 from .test_auth import auth_app as auth_app
 from .test_tickets import actor_client
 
+pytestmark = pytest.mark.preserved_protection
+
+
 ROUTES = ["/account", "/tickets", "/account/edit", "/admin/users"]
 ACTIONS = ["activate", "deactivate"]
 

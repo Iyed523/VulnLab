@@ -50,7 +50,8 @@ indent-style = "space"
 testpaths = ["tests"]
 addopts = ["--strict-config", "--strict-markers", "--import-mode=importlib"]
 markers = [
-    "functional: futurs tests fonctionnels (aucun en M2)",
-    "vulnerable_behavior: futures démonstrations de faiblesse (aucune en M2)",
-    "security: futurs tests de remédiation (aucun en M2)",
+    "functional: functional contracts and installation",
+    "vulnerable_behavior: expected intentional disclosure, never security validation",
+    "security: future remediation tests (none introduced in M11)",
+    "preserved_protection: authorization/authentication/CSRF protections retained",
 ]
