@@ -2,13 +2,13 @@
 
 > **AVERTISSEMENT : laboratoire volontairement vulnérable, exclusivement local, non destiné à la production. Ne jamais publier ni déployer ce service.**
 
-État M8 : profil limité à `display_name`, administration minimale et révocation durable des sessions ; tickets/commentaires M7 conservés. Aucune faiblesse volontaire. `GET /healthz` retourne `{"status":"ok"}` et concerne seulement le processus HTTP. Voir les [contrats M8](../docs/profile-admin.md), les [contrats M7](../docs/tickets-comments.md) et le [guide M5](../docs/data-foundation.md).
+État M11 : [VULN-003](../docs/vulnerabilities/VULN-003.md) divulgue intentionnellement le détail d’un ticket privé et ses commentaires à un utilisateur actif connecté qui fournit son identifiant. Liste, comptage, HEAD et écritures conservent leurs contrôles. Le baseline correct M10 reste au tag `baseline-functional-v1`. `GET /healthz` reste une sonde du seul processus HTTP. Voir la [preuve nettoyée](../docs/proofs/VULN-003-https-ci.json), les [contrats M8](../docs/profile-admin.md), les [contrats M7](../docs/tickets-comments.md) et le [guide M5](../docs/data-foundation.md).
 
 Le [guide Docker](../docs/docker.md) décrit la pile Nginx/Gunicorn/PostgreSQL/Redis et ses commandes. Le [rapport M6.1](../docs/local-validation-m61.md) distingue les preuves Windows Docker Desktop de la CI Linux ; les sorties possibles du proxy restent une limite. M7 utilise seulement les ressources jetables CI et préserve les piles locales arrêtées.
 
 Le [guide de développement](../docs/development.md) fournit les commandes Python. Les tests précédents sont conservés, complétés par les contrôles M8 PostgreSQL/Redis et HTTPS. Ces contrôles ne sont pas un audit de sécurité. M7 est validée ; M8 reste soumise à revue.
 
-Le comportement de référence tickets/commentaires est implémenté. Les futures faiblesses seront introduites une par une, identifiées, justifiées et testées dans une mission autorisée. Les démonstrations utiliseront uniquement des comptes et données fictifs, sans cibler de tiers. Les preuves XSS resteront locales, sans collecte ni transmission de données.
+Le comportement de référence tickets/commentaires est conservé au baseline ; seul l’écart VULN-003 est introduit ici. Une démonstration verte constate cette faiblesse, sans validation de sécurité. Les autres faiblesses resteront soumises à une mission autorisée. Les démonstrations utiliseront uniquement des comptes et données fictifs, sans cibler de tiers. Les preuves XSS resteront locales, sans collecte ni transmission de données.
 
 Consulter l’[architecture](../docs/architecture.md), les [autorisations de référence](../docs/authorization-matrix.md), les [exigences d’isolation](../docs/lab-safety.md) et la [roadmap](../docs/roadmap.md). Les écarts volontaires aux règles de référence devront être explicitement documentés dans les missions futures.
 
