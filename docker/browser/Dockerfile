@@ -4,7 +4,9 @@ COPY requirements.txt /opt/browser/requirements.txt
 RUN pip install --no-cache-dir --no-deps -r /opt/browser/requirements.txt && pip check
 COPY sandbox_probe.py /opt/browser/sandbox_probe.py
 COPY network_policy.py sandbox_result.py witnesses.py /opt/browser/
+COPY namespace_probe.py /opt/browser/
 USER pwuser
 ENV HOME=/tmp/browser-home
+ENV PYTHONUNBUFFERED=1
 WORKDIR /tmp
 ENTRYPOINT ["python", "/opt/browser/sandbox_probe.py"]

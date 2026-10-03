@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M12 — préparation navigateur uniquement, sans XSS introduit.** La sandbox Chromium reste bloquée dans l'environnement dédié sans capacités ; les restrictions réseau et TLS navigateur ne sont donc pas vérifiées. Voir [diagnostic et décision ouverte](docs/m12-browser-preparation.md) et [VULN-002 prévue](docs/vulnerabilities/VULN-002.md).
+**M12.1 — sandbox navigateur et témoins loopback vérifiés, sans XSS introduit.** Une adaptation ciblée du profil seccomp résout le refus chroot sans capacité ajoutée. Chromium confirme ses couches de sandbox ; HTTP, redirections et WebSocket sont réellement contrôlés dans un conteneur sans réseau. Aucune connexion au laboratoire ni vérification TLS navigateur à cette étape. Voir [rapport et limites M12.1](docs/m12-1-browser-sandbox.md), [historique M12](docs/m12-browser-preparation.md) et [VULN-002 prévue](docs/vulnerabilities/VULN-002.md).
 
 M11 est validée par le Product Owner, sa PR reste en brouillon sans fusion. VULN-003 permet à un utilisateur actif connecté de consulter le détail d’un ticket d’autrui, commentaires inclus, en modifiant l’identifiant. Cette branche reste volontairement vulnérable : une démonstration verte constate une divulgation, sans validation de sécurité. Liste, comptage et écritures gardent leurs autorisations ; les commentaires restent échappés. Voir [fiche VULN-003](docs/vulnerabilities/VULN-003.md), [matrice](docs/vulnerability-matrix.md) et [audit](docs/security-audit.md).
 

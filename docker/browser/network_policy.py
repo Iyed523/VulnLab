@@ -33,7 +33,7 @@ def redirect_target(current, location, allowed):
     return target
 
 
-def install_policy(context, allowed):
+async def install_policy(context, allowed):
     """Never continue a response that could redirect beyond the allowed origins.
 
     Playwright routes do not intercept every redirected request. Fetch without
@@ -41,37 +41,40 @@ def install_policy(context, allowed):
     This mediates HTTP(S), not all possible Chromium traffic or local access.
     """
 
-    def handle(route):
+    async def handle(route):
         url = route.request.url
         if not permitted(url, allowed):
-            route.abort("blockedbyclient")
+            await route.abort("blockedbyclient")
             return
         method = route.request.method
         data = route.request.post_data_buffer
         for _ in range(10):
-            response = route.fetch(
+            response = await route.fetch(
                 url=url, method=method, post_data=data, max_redirects=0, timeout=10000
             )
             try:
                 if response.status not in {301, 302, 303, 307, 308}:
-                    route.fulfill(response=response)
+                    await route.fulfill(response=response)
                     return
                 location = response.headers.get("location")
                 if not location:
-                    route.abort("blockedbyclient")
+                    await route.abort("blockedbyclient")
                     return
                 try:
                     url = redirect_target(url, location, allowed)
                 except ValueError:
-                    route.abort("blockedbyclient")
+                    await route.abort("blockedbyclient")
                     return
                 if response.status == 303 or (
                     response.status in {301, 302} and method == "POST"
                 ):
                     method, data = "GET", None
             finally:
-                response.dispose()
-        route.abort("blockedbyclient")
+                await response.dispose()
+        await route.abort("blockedbyclient")
 
-    context.route("**/*", handle)
-    context.route_web_socket("**/*", lambda socket: socket.close())
+    async def reject_socket(socket):
+        await socket.close()
+
+    await context.route("**/*", handle)
+    await context.route_web_socket("**/*", reject_socket)

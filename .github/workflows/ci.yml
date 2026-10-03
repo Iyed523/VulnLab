@@ -90,15 +90,15 @@ jobs:
         run: |
           docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools seed
           python3 scripts/ci/verify_auth_https.py
-      - name: M12 preparation - validate and build dedicated browser tooling
+      - name: M12.1 - validate and build dedicated browser tooling
         run: |
           docker compose -f compose.browser.yaml config --quiet
           docker compose -f compose.browser.yaml build
-      - name: M12 sandbox compatibility diagnostic - no XSS or prerequisite validation
-        # Diagnostic mode reports recognized sandbox incompatibilities explicitly.
-        # Gate mode (without --diagnostic) returns 2 for the same blocker.
-        # Tool errors and unexpected execution failures still fail this job.
-        run: docker compose -f compose.browser.yaml run --rm browser-preflight --diagnostic
+      - name: M12.1 mandatory sandbox and local HTTP redirect WebSocket gate (no lab or XSS)
+        # Every missing prerequisite fails, including recognized sandbox failures.
+        run: docker compose -f compose.browser.yaml run --rm browser-preflight
+      - name: M12.1 differential seccomp namespace and capability controls
+        run: python3 scripts/ci/verify_browser_namespace.py
       - name: Preserve failure diagnostics in job logs
         if: failure()
         run: |

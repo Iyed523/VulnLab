@@ -1,5 +1,8 @@
 # M12 — préparation uniquement, prérequis navigateur bloqué
 
+Rapport historique de M12 à `3f39c5b`. La résolution ultérieure, sans connexion
+au laboratoire ni XSS, est décrite dans [M12.1](m12-1-browser-sandbox.md).
+
 La branche `m12-vuln-002-stored-xss` part de M11 validée,
 `a61fd1ae25d6783ea7a5aa9cbf2b323b817f3a74`. La [PR M11 #15](https://github.com/Iyed523/VulnLab/pull/15)
 reste en brouillon vers main, sans fusion. Le tag annoté `baseline-functional-v1`

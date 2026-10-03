@@ -1,10 +1,13 @@
 # VULN-002 — XSS stocké dans les commentaires, prévu mais non introduit
 
-**État M12 : préparation uniquement.** Le prérequis sandbox échoue ; aucun XSS
+**État M12.1 : navigateur vérifié sur loopback, sans connexion au laboratoire.**
+Le blocage sandbox historique M12 est résolu ; aucun XSS
 n'est présent dans cette livraison. Le contenu des commentaires reste échappé
 comme à M11 et au tag `baseline-functional-v1`. Aucun effet DOM, persistance
 d'exécution, sévérité constatée ou capture navigateur ne peut être revendiqué.
-Voir le [rapport et le diagnostic](../m12-browser-preparation.md).
+Voir le [rapport M12.1 et ses limites](../m12-1-browser-sandbox.md) et le
+[diagnostic historique M12](../m12-browser-preparation.md). TLS navigateur et
+introduction du XSS restent ultérieurs après revue.
 
 ## Périmètre pédagogique prévu, conditionnel
 
@@ -44,3 +47,5 @@ Les démonstrations `vulnerable_behavior` restent exclusivement celles de VULN-0
 Aucune attente baseline/M11 adaptée, aucun skip/xfail, aucun contrôle assoupli.
 La [preuve de prérequis bloqué](../proofs/M12-browser-preflight.json) n'est pas une
 preuve XSS. Aucun navigateur personnel, tiers, collecte ou exfiltration utilisé.
+M12.1 conserve les 36 tests unitaires et en ajoute 13 ; sandbox et témoins réseau
+réels sont vérifiés séparément par la porte CI, sans charge pédagogique.

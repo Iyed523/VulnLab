@@ -1,8 +1,8 @@
 # M12 preparation only. No lab access, published port, volume or personal profile.
-name: vulnlab-m12-browser-preflight
+name: vulnlab-m12-1-browser-preflight
 services:
   browser-preflight:
-    image: vulnlab-m12-browser:1.63.0
+    image: vulnlab-m12-1-browser:1.63.0
     build:
       context: ./docker/browser
     init: true
@@ -12,7 +12,7 @@ services:
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
-      - seccomp=./docker/browser/seccomp.json
+      - seccomp=./docker/browser/seccomp-chroot.json
     shm_size: 256m
     mem_limit: 1g
     cpus: 1.0
