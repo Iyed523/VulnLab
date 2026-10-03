@@ -1,0 +1,44 @@
+{
+  "bob_detail_status": 200,
+  "bob_edit_get": 404,
+  "bob_head": 404,
+  "bob_list_contains_marker": false,
+  "bob_list_status": 200,
+  "bob_post_refusals": {
+    "comments": 404,
+    "delete": 404,
+    "edit": 404
+  },
+  "classification": "intentional_weakness_observed",
+  "csrf_missing": 400,
+  "exposed": [
+    "title",
+    "description",
+    "status",
+    "comment_content",
+    "author_display_name",
+    "comment_created_at",
+    "comment_count",
+    "ticket_id_in_links"
+  ],
+  "invalid_session": 303,
+  "marker": "VULN-003-813b195ec4f7412fb6f9f5fcd03624bc",
+  "ticket_path": "/tickets/1",
+  "victim_data_unchanged": true,
+  "visitor": 303,
+  "source_commit": "cd92bc1866e1c7e20a1e530d65eea34a0da949f8",
+  "source_ci": "https://github.com/Iyed523/VulnLab/actions/runs/37132827269",
+  "environment": "GitHub Actions Linux runner, HTTPS validated to local loopback 127.0.0.1:8443, real disposable PostgreSQL/Redis",
+  "baseline_commit": "bd029b523d1835e737faae51b6c9d5c47d5a6efb",
+  "tests": {
+    "python_per_platform": {
+      "functional": 20,
+      "preserved_protection": 62
+    },
+    "postgresql_redis": {
+      "functional": 100,
+      "preserved_protection": 143,
+      "vulnerable_behavior": 3
+    }
+  }
+}

@@ -43,7 +43,7 @@ Les catégories sont disjointes et explicitement exécutées par la CI. `securit
 
 ## Observation, limites et remédiation prévue
 
-À ce stade de préparation, tests locaux Python et collection des catégories sont réalisés ; les résultats HTTPS/PostgreSQL et la preuve nettoyée seront ajoutés uniquement après observation réelle dans la CI. Voir [audit](../security-audit.md).
+[CI réelle sur cd92bc1](https://github.com/Iyed523/VulnLab/actions/runs/37132827269) réussie : 20 tests Python fonctionnels et 62 protections par plateforme ; 100 tests PostgreSQL fonctionnels, 143 protections PostgreSQL/Redis et 3 démonstrations volontaires réussis. HTTPS validé sur le loopback du runner : Bob reçoit 200 pour le détail d’Alice et ses commentaires, malgré une liste vide ; édition/suppression/commentaire restent 404. Visiteur/SID invalide et désactivation/révocation sont réellement contrôlés. Voir [preuve JSON nettoyée](../proofs/VULN-003-https-ci.json) et [audit](../security-audit.md). La preuve identifie le SHA applicatif observé ; les modifications ultérieures de livraison concernent ces documents et la preuve, avec nouvelle CI finale attendue.
 
 Prévu pour la future correction : appliquer côté serveur la propriété ou le rôle admin avant toute lecture, réutiliser le chemin autorisé du baseline, et rétablir le refus inter-utilisateur sur détail tout en gardant les tests fonctionnels et d’écriture. Aucune remédiation dans cette mission.
 
