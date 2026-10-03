@@ -83,5 +83,32 @@
     "docker/browser/sandbox_result.py": "f632309c9d7d12b56924ec15e47b07466e800808bbfd4cede8416294b1add166",
     "docker/browser/network_policy.py": "d0f5b6efc825794c515312322c7b14e1e9cba3cd4222724f602b454fb7be7382",
     "docker/browser/witnesses.py": "6ebab421d13ce03ca32e089a77bcdec9f028d8ac111d3b3dfa102e7851def44d"
+  },
+  "ci_confirmation": {
+    "head_sha": "702fb225b92183421e2a46b0b507599a20aaaaf7",
+    "run": "https://github.com/Iyed523/VulnLab/actions/runs/37136872044",
+    "classification": "successful preparation diagnostic; sandbox prerequisite remains blocked",
+    "jobs": [
+      "Python Windows: success",
+      "Python Linux: success",
+      "Docker Linux: success"
+    ],
+    "python_per_platform": {
+      "functional": 20,
+      "preserved_protection": 98
+    },
+    "postgresql_redis": {
+      "functional": 100,
+      "preserved_protection": 143,
+      "vulnerable_behavior_vuln003": 3
+    },
+    "browser_diagnostic": {
+      "stage": "sandbox-launch",
+      "sandbox_verified": false,
+      "reason": "zygote-chroot-denied",
+      "network_restrictions_verified": false,
+      "lab_tls_verified": false,
+      "xss_allowed": false
+    }
   }
 }

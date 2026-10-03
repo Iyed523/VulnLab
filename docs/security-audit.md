@@ -37,9 +37,20 @@ capture DOM ou sévérité observée. VULN-003 et sa preuve antérieure restent 
 
 La CI conserve les trois jobs et les suites M11, ajoute Ruff sur l'outillage
 navigateur et un diagnostic de compatibilité explicitement nommé préparation.
-Elle n'autorise pas l'introduction du XSS. Résultats finaux à renseigner après
-l'exécution réelle sur la tête publiée. Arrêt pour décision Product Owner,
-sans fusion, déploiement, nouveau tag ou modification des piles conservées.
+Elle n'autorise pas l'introduction du XSS. Sur [CI réelle 702fb22](https://github.com/Iyed523/VulnLab/actions/runs/37136872044),
+les trois jobs sont verts : Python Windows/Linux, 20 fonctionnels et 98 protections
+chacun ; PostgreSQL/Redis, 100 fonctionnels, 143 protections et 3 démonstrations
+VULN-003. Parcours HTTPS réel inchangé réussi : divulgation attendue, refus
+d'écriture, CSRF, sessions, administration et quotas conservés. Le diagnostic
+navigateur CI confirme `zygote-chroot-denied`, sandbox et TLS navigateur non
+vérifiés, `xss_allowed=false` ; aucun témoin navigateur exécuté.
+
+La [PR M12 #16](https://github.com/Iyed523/VulnLab/pull/16) reste en brouillon vers
+`m11-vuln-003-idor`, dépendant de #15 non fusionnée. Les documents/proofs qui
+consignent ces résultats sont livrés après l'exécution observée ; la CI de la
+tête documentaire finale est vérifiée séparément avant remise. Arrêt pour
+décision Product Owner, sans fusion, déploiement, nouveau tag ou modification
+des piles conservées.
 
 Vérifications locales Windows réellement réussies : 20 fonctionnels + 98
 protections, wheel, 42 paquets compatibles, Ruff/formatage incluant les scripts

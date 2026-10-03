@@ -129,6 +129,15 @@ PostgreSQL/Redis réels (100 fonctionnels, 143 protections, 3 démonstrations
 VULN-003) et le parcours HTTPS M11. Les résultats finaux sont consignés dans
 l'[audit](security-audit.md).
 
+[CI observée sur 702fb22](https://github.com/Iyed523/VulnLab/actions/runs/37136872044) :
+trois jobs verts, 20 fonctionnels + 98 protections Python par plateforme ;
+100 fonctionnels + 143 protections PostgreSQL/Redis + 3 démonstrations VULN-003.
+HTTPS et infrastructure M11 réellement réussis. Le diagnostic navigateur du
+runner confirme le même `zygote-chroot-denied`, sans exécution des témoins.
+Ces résultats concernent le commit d'outillage ; la tête documentaire finale
+est également contrôlée avant remise. [PR brouillon M12 #16](https://github.com/Iyed523/VulnLab/pull/16)
+vers `m11-vuln-003-idor`, dépendance M11 préservée.
+
 Exécutés sur Windows : 20 tests fonctionnels et 98 protections réussis, dont les
 36 nouveaux tests de préparation. `uv pip check` : 42 paquets compatibles.
 Wheel construite avec `uv run --locked --group build --offline -- uv build
