@@ -1,5 +1,7 @@
 # Autorisations de référence
 
+**Écart actuel M11 : [VULN-003](vulnerabilities/VULN-003.md) rend uniquement GET détail inter-utilisateur vulnérable, avec divulgation des commentaires rendus. HEAD et les autres opérations restent autorisés côté serveur. Les règles de référence et preuves antérieures ci-dessous décrivent le baseline correct, conservé par baseline-functional-v1.**
+
 M7 implémente les tickets/commentaires ; M8 ajoute profil et administration minimale dans `vulnerable-app`. Voir les [contrats M7](tickets-comments.md) et [contrats M8](profile-admin.md). La recherche et le cycle de vie des administrateurs restent futurs. Aucun scénario volontairement vulnérable n'est introduit.
 
 Les tickets sont privés. Cette matrice définit le comportement attendu commun ; elle ne constitue pas une preuve de contrôle existant. Les éventuels écarts volontaires du laboratoire devront être associés à leur identifiant et test.

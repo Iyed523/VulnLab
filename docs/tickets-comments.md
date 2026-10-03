@@ -1,5 +1,7 @@
 # Tickets privés et commentaires — M7
 
+**Écart actuel M11 : [VULN-003](vulnerabilities/VULN-003.md) rend uniquement GET détail inter-utilisateur vulnérable, avec divulgation des commentaires rendus. HEAD et les autres opérations restent autorisés côté serveur. Les règles de référence et preuves antérieures ci-dessous décrivent le baseline correct, conservé par baseline-functional-v1.**
+
 M6/M6.1 sont validées sur `4f1e244`. M7 part de ce SHA sur `codex/m7-tickets-comments`, avec PR brouillon vers `codex/m6-auth-sessions`. Les PR antérieures restent non fusionnées. Les modèles/migrations M5 et versions verrouillées sont conservés ; aucune faiblesse volontaire, fonction administrative ou implémentation dans `secure-app`.
 
 ## Contrats HTTP et politique

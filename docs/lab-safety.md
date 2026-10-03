@@ -1,5 +1,7 @@
 # Sécurité et isolation du laboratoire
 
+M11 introduit exclusivement [VULN-003](vulnerabilities/VULN-003.md), divulgation du détail et de ses commentaires. Code publié pour revue, service jamais publié. Tests réels uniquement sur ressources CI éphémères ; pas de validation Docker Desktop M11 revendiquée. Les états historiques ci-dessous ne remplacent pas la preuve M11.
+
 **État M4 : M3/M3-Git validées sur la base des trois jobs Linux/Windows du socle ; configuration HTTPS sur 127.0.0.1:8443 vérifiée dans la CI Linux M4.** Le moteur Docker Desktop reste inaccessible. Les preuves Linux CI M4 et leurs limites sont consignées dans [docker.md](docker.md), sans affirmation de validation Windows Docker. Le laboratoire reste exclusivement local, avec certificats privés exclus du dépôt et de la construction.
 
 La restriction des sorties n’est pas une garantie globale : app/db/redis restent sur les réseaux internes, tandis que le proxy est sur ingress pour la publication loopback. Un témoin local, disponible lors d’un contrôle positif, sert à vérifier les refus des services internes et l’accès encore possible du proxy. Aucune destination tierce n’est sondée. Une politique de sortie exhaustive du proxy demanderait une décision de filtrage de l’environnement ; aucune modification système globale n’est effectuée.

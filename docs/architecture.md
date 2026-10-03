@@ -1,5 +1,7 @@
 # Architecture de référence
 
+**Écart actuel M11 : [VULN-003](vulnerabilities/VULN-003.md) rend uniquement GET détail inter-utilisateur vulnérable, avec divulgation des commentaires rendus. HEAD et les autres opérations restent autorisés côté serveur. Les règles de référence et preuves antérieures ci-dessous décrivent le baseline correct, conservé par baseline-functional-v1.**
+
 État courant M8 : profil limité au nom affiché, administration minimale et version SQL de session pour la révocation durable. Voir [contrats M8](profile-admin.md) et [ADR 0008](decisions/0008-profile-admin.md). M1–M7 validées ; M8 en revue, `secure-app` documentaire. Les états antérieurs ci-dessous sont historiques.
 
 M1, M2, M3 et M3-Git sont validées selon le cadrage M4. M3 ajoute une fabrique `create_app`, la route technique `/healthz` et les fichiers Docker pour la première pile ; son exécution Linux est vérifiée en CI ; Docker Desktop local reste non vérifié. Les composants métier, modules et flux ci-dessous restent prévus ; aucun comportement métier n’est implémenté ; les vérifications d’infrastructure et leurs limites figurent dans docker.md. Les versions d’outillage retenues figurent dans le [guide de développement](development.md).

@@ -9,6 +9,8 @@ from vulnlab_vulnerable import create_app
 from vulnlab_vulnerable.auth import local_destination
 from vulnlab_vulnerable.session_backend import UnavailableSessionInterface
 
+pytestmark = pytest.mark.preserved_protection
+
 
 @pytest.mark.parametrize(
     "value",

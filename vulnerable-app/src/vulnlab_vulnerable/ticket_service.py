@@ -44,24 +44,37 @@ def list_tickets(database, actor, page):
 def ticket_detail(database, actor, identifier, page):
     with database.transaction() as session:
         ticket = authorized_ticket(session, actor, identifier)
-        total = session.scalar(
-            select(func.count())
-            .select_from(Comment)
-            .where(Comment.ticket_id == ticket.id)
+        return detail_rows(session, ticket, page)
+
+
+def vulnerable_ticket_detail(database, identifier, page):
+    # VULN-003: identifier-only GET lookup; docs/vulnerabilities/VULN-003.md.
+    if not -(2**31) <= identifier < 2**31:
+        abort(404)
+    with database.transaction() as session:
+        ticket = session.scalar(select(Ticket).where(Ticket.id == identifier))
+        if ticket is None:
+            abort(404)
+        return detail_rows(session, ticket, page)
+
+
+def detail_rows(session, ticket, page):
+    total = session.scalar(
+        select(func.count()).select_from(Comment).where(Comment.ticket_id == ticket.id)
+    )
+    comments = session.execute(
+        select(
+            Comment.content,
+            Comment.created_at,
+            User.display_name.label("author_name"),
         )
-        comments = session.execute(
-            select(
-                Comment.content,
-                Comment.created_at,
-                User.display_name.label("author_name"),
-            )
-            .join(User, User.id == Comment.author_id)
-            .where(Comment.ticket_id == ticket.id)
-            .order_by(Comment.created_at, Comment.id)
-            .limit(PAGE_SIZE)
-            .offset((page - 1) * PAGE_SIZE)
-        ).all()
-        return ticket, comments, total
+        .join(User, User.id == Comment.author_id)
+        .where(Comment.ticket_id == ticket.id)
+        .order_by(Comment.created_at, Comment.id)
+        .limit(PAGE_SIZE)
+        .offset((page - 1) * PAGE_SIZE)
+    ).all()
+    return ticket, comments, total
 
 
 def create_ticket(database, actor, title, description):

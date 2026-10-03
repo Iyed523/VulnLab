@@ -1,11 +1,13 @@
 """One real local HTTPS flow; no cookie, token, password or response dump."""
 
 import http.client
+import json
 import re
 import socket
 import ssl
 from http.cookies import SimpleCookie
 from urllib.parse import urlencode
+from uuid import uuid4
 
 HOST = "vulnerable.vulnlab.test"
 BASE = f"https://{HOST}:8443"
@@ -59,22 +61,35 @@ def token(body):
 
 
 def verify_tickets(client):
+    marker = "VULN-003-" + uuid4().hex
     status, body, _ = client.request("GET", "/tickets/new")
     assert status == 200
     status, _, headers = client.request(
         "POST",
         "/tickets/new",
         {
-            "title": "<b>HTTPS private ticket</b>",
-            "description": "<script>local fictitious text</script>",
+            "title": f"<b>{marker}</b>",
+            "description": f"<script>{marker} description</script>",
             "csrf_token": token(body),
         },
     )
     assert status == 303
     path = headers["Location"]
     status, body, _ = client.request("GET", path)
-    assert status == 200 and "&lt;b&gt;HTTPS private ticket&lt;/b&gt;" in body
-    assert "&lt;script&gt;local fictitious text&lt;/script&gt;" in body
+    assert status == 200 and f"&lt;b&gt;{marker}&lt;/b&gt;" in body
+    assert f"&lt;script&gt;{marker} description&lt;/script&gt;" in body
+    assert (
+        client.request(
+            "POST",
+            path + "/comments",
+            {"content": f"<b>{marker} comment</b>", "csrf_token": token(body)},
+        )[0]
+        == 303
+    )
+    assert Client().request("GET", path)[0] == 303
+    invalid = Client()
+    invalid.cookie = "invalid-fictitious-session"
+    assert invalid.request("GET", path)[0] == 303
     other = Client()
     status, body, _ = other.request("GET", "/register")
     assert status == 200
@@ -105,23 +120,87 @@ def verify_tickets(client):
         )[0]
         == 303
     )
+    disabled_probe = Client()
+    status, probe_body, _ = disabled_probe.request("GET", "/login")
+    assert status == 200
+    assert (
+        disabled_probe.request(
+            "POST",
+            "/login",
+            {
+                "username": "m7httpsbob",
+                "password": "demo-HTTPS-Bob-only!",
+                "csrf_token": token(probe_body),
+            },
+        )[0]
+        == 303
+    )
     status, body, _ = other.request("GET", "/tickets/new")
     assert status == 200
     other_token = token(body)
-    assert other.request("GET", path)[0] == 404
+    detail_status, disclosed, _ = other.request("GET", path)
+    assert (
+        detail_status == 200
+    )  # VULN-003: expected disclosure, not security validation.
+    assert f"&lt;b&gt;{marker}&lt;/b&gt;" in disclosed
+    assert f"&lt;script&gt;{marker} description&lt;/script&gt;" in disclosed
+    assert f"&lt;b&gt;{marker} comment&lt;/b&gt;" in disclosed
+    assert "&lt;b&gt;HTTPS Alice fictitious&lt;/b&gt;" in disclosed
+    assert "Comments (1)" in disclosed and "Status: open" in disclosed
+    assert re.search(r"— \d{4}-\d{2}-\d{2}", disclosed)
+    other_token = token(
+        disclosed
+    )  # Visible form token still grants no write permission.
+    assert other.request("HEAD", path)[0] == 404
+    assert other.request("POST", path + "/delete", {})[0] == 400
+    refused = {}
     assert other.request("GET", path + "/edit")[0] == 404
     for suffix, data in [
         ("edit", {"title": "Denied", "description": "Local", "status": "closed"}),
         ("comments", {"content": "Denied"}),
         ("delete", {}),
     ]:
-        assert (
-            other.request(
-                "POST", path + "/" + suffix, data | {"csrf_token": other_token}
-            )[0]
-            == 404
+        refused[suffix] = other.request(
+            "POST", path + "/" + suffix, data | {"csrf_token": other_token}
+        )[0]
+        assert refused[suffix] == 404
+    listing_status, listing, _ = other.request("GET", "/tickets")
+    assert listing_status == 200 and marker not in listing
+    assert "Total visible: 0" in listing
+    status, unchanged, _ = client.request("GET", path)
+    assert status == 200 and marker in unchanged and "Status: open" in unchanged
+    assert "Comments (1)" in unchanged and "Denied" not in unchanged
+    print(
+        "VULN-003_PROOF "
+        + json.dumps(
+            {
+                "classification": "intentional_weakness_observed",
+                "ticket_path": path,
+                "marker": marker,
+                "bob_list_status": listing_status,
+                "bob_list_contains_marker": False,
+                "bob_detail_status": detail_status,
+                "exposed": [
+                    "title",
+                    "description",
+                    "status",
+                    "comment_content",
+                    "author_display_name",
+                    "comment_created_at",
+                    "comment_count",
+                    "ticket_id_in_links",
+                ],
+                "bob_post_refusals": refused,
+                "bob_edit_get": 404,
+                "bob_head": 404,
+                "visitor": 303,
+                "invalid_session": 303,
+                "csrf_missing": 400,
+                "victim_data_unchanged": True,
+            },
+            sort_keys=True,
         )
-    assert "HTTPS private ticket" not in other.request("GET", "/tickets")[1]
+    )
     status, _, other_headers = other.request(
         "POST",
         "/tickets/new",
@@ -131,7 +210,10 @@ def verify_tickets(client):
             "csrf_token": other_token,
         },
     )
-    assert status == 303 and client.request("GET", other_headers["Location"])[0] == 404
+    assert status == 303
+    assert client.request("GET", other_headers["Location"])[0] == 200
+    assert client.request("GET", other_headers["Location"] + "/edit")[0] == 404
+    other.ticket_path = other_headers["Location"]
     status, body, _ = client.request("GET", path + "/edit")
     assert status == 200
     assert (
@@ -166,13 +248,27 @@ def verify_tickets(client):
     )
     assert client.request("GET", path)[0] == 404
     assert other.request("GET", other_headers["Location"])[0] == 200
-    print(
-        "HTTPS tickets: create/read/edit/comment/delete, escaping and two-user access denial verified; private values withheld."
+    status, create_body, _ = client.request("GET", "/tickets/new")
+    assert status == 200
+    status, _, retained = client.request(
+        "POST",
+        "/tickets/new",
+        {
+            "title": marker + " retained victim",
+            "description": "Fictitious lifecycle guard",
+            "csrf_token": token(create_body),
+        },
     )
-    return other
+    assert status == 303
+    other.victim_path = retained["Location"]
+    assert other.request("GET", other.victim_path)[0] == 200
+    print(
+        "HTTPS VULN-003: cross-user GET disclosure observed; functional lifecycle, escaping and write refusals verified; sensitive values withheld."
+    )
+    return other, disabled_probe
 
 
-def verify_accounts(client, other):
+def verify_accounts(client, other, disabled_probe):
     assert client.request("GET", "/admin/users")[0] == 403
     status, body, _ = client.request("GET", "/account/edit")
     assert status == 200
@@ -224,10 +320,15 @@ def verify_accounts(client, other):
         assert admin.request("POST", path, {})[0] == 400
         status, _, headers = admin.request("POST", path, {"csrf_token": csrf})
         assert status == 303 and headers["Location"] == "/admin/users"
+        if action == "deactivate":
+            assert disabled_probe.request("GET", other.victim_path)[0] == 303
+            # The original other SID receives no request during inactivity.
     # Re-enable before this session's next request: SQL version must still revoke it.
     assert other.request("GET", "/account/edit")[0] == 303 and other.cookie is None
     other.cookie = old
     assert other.request("GET", "/tickets")[0] == 303
+    other.cookie = old
+    assert other.request("GET", other.victim_path)[0] == 303
     assert (
         admin.request("POST", "/admin/users/-1003/deactivate", {"csrf_token": csrf})[0]
         == 403
@@ -247,8 +348,8 @@ def main():
             "POST",
             "/register",
             {
-                "username": "m6https",
-                "display_name": "<b>HTTPS fictitious</b>",
+                "username": "m11httpsalice",
+                "display_name": "<b>HTTPS Alice fictitious</b>",
                 "password": "demo-HTTPS-flow-only!",
                 "csrf_token": token(body),
             },
@@ -263,7 +364,7 @@ def main():
         "POST",
         "/login",
         {
-            "username": "M6HTTPS",
+            "username": "M11HTTPSALICE",
             "password": "demo-HTTPS-flow-only!",
             "csrf_token": token(body),
         },
@@ -280,12 +381,12 @@ def main():
     replay = Client()
     replay.cookie = old
     assert replay.request("GET", "/account")[0] == 303
-    other = verify_tickets(client)
+    other, disabled_probe = verify_tickets(client)
     assert client.request("GET", "/logout")[0] == 405
     status, body, _ = client.request("GET", "/account")
-    assert status == 200 and "&lt;b&gt;HTTPS fictitious&lt;/b&gt;" in body
+    assert status == 200 and "&lt;b&gt;HTTPS Alice fictitious&lt;/b&gt;" in body
     assert "password_hash" not in body and "$argon2" not in body
-    verify_accounts(client, other)
+    verify_accounts(client, other, disabled_probe)
     assert client.request("POST", "/logout", {})[0] == 400
     assert client.request("GET", "/account")[0] == 200
     authenticated = client.cookie
@@ -297,9 +398,9 @@ def main():
     status, body, _ = client.request("GET", "/login")
     assert status == 200
     csrf = token(body)
-    # Three successful logins consumed three of five attempts. Forged proxy chains
+    # Four successful logins consumed four of five attempts. Forged proxy chains
     # must not create new IP buckets; nginx replaces them with the actual peer.
-    for index in range(2):
+    for index in range(1):
         assert (
             client.request(
                 "POST",

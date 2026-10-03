@@ -9,6 +9,8 @@ from vulnlab_vulnerable.seed import seed_demo
 
 from .conftest import alembic_config
 
+pytestmark = pytest.mark.preserved_protection
+
 
 def test_m8_migration_preserves_existing_records(databases):
     database, migration = databases

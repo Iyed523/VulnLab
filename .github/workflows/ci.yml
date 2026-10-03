@@ -41,8 +41,10 @@ jobs:
         run: uv run --locked ruff check --config pyproject.toml . ../scripts ../tests/ci
       - name: Check formatting
         run: uv run --locked ruff format --check --config pyproject.toml . ../scripts ../tests/ci
-      - name: Check installation
-        run: uv run --locked pytest tests ../tests/ci
+      - name: Functional contracts (intentional vulnerable branch)
+        run: uv run --locked pytest tests ../tests/ci -m "not vulnerable_behavior and not preserved_protection"
+      - name: Retained protections (not remediation)
+        run: uv run --locked pytest tests ../tests/ci -m preserved_protection
       - name: Build wheel
         run: uv run --locked --group build -- uv build --wheel --no-build-isolation
 
@@ -76,11 +78,15 @@ jobs:
         run: |
           docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools upgrade
           docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools check
-      - name: Test against real disposable PostgreSQL
-        run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci run --rm integration-test
+      - name: Functional PostgreSQL contracts
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci run --rm integration-test /build/.venv/bin/python -m pytest -p no:cacheprovider integration -m "not vulnerable_behavior and not preserved_protection" -v --tb=short
+      - name: Retained PostgreSQL Redis protections
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci run --rm integration-test /build/.venv/bin/python -m pytest -p no:cacheprovider integration -m preserved_protection -v --tb=short
+      - name: VULN-003 intentional disclosure demonstrations (not security validation)
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci run --rm integration-test /build/.venv/bin/python -m pytest -p no:cacheprovider integration -m vulnerable_behavior -v --tb=short
       - name: Verify local infrastructure after database tests
         run: python3 scripts/ci/verify_docker.py
-      - name: Verify authentication through local HTTPS proxy
+      - name: Observe VULN-003 and retained controls through local HTTPS proxy
         run: |
           docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools seed
           python3 scripts/ci/verify_auth_https.py

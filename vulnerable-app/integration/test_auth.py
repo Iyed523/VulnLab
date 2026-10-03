@@ -18,6 +18,9 @@ from vulnlab_vulnerable.models import User
 from vulnlab_vulnerable.passwords import verify_password
 from vulnlab_vulnerable.seed import seed_demo
 
+pytestmark = pytest.mark.preserved_protection
+
+
 BASE = "https://vulnerable.vulnlab.test:8443"
 COOKIE = "__Host-vulnlab-session"
 
