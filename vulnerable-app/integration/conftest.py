@@ -49,7 +49,7 @@ def migrated_schema(databases):
         command.check(config)
         assert (
             connection.execute(text("SELECT version_num FROM alembic_version")).scalar()
-            == "0001_data_foundation"
+            == "0002_session_version"
         )
 
 

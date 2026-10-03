@@ -1,5 +1,7 @@
 # Roadmap
 
+État courant : M1 à M7 validées, M8 profil/administration minimale soumise à revue. Voir [M8](profile-admin.md). Les états M4 ci-dessous sont historiques ; aucune mission suivante n'est commencée.
+
 Chaque étape nécessite une revue du Team Lead et une validation du Product Owner. M1, M2, M3 et M3-Git sont validées selon le cadrage M4, avec les limites Docker Desktop et sorties réseau. M4 reste soumise à revue ; M5 n’est pas commencée.
 
 | Étape | Contenu | État à la livraison M4 |

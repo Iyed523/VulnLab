@@ -1,5 +1,7 @@
 # Authentification et sessions M6
 
+M8 ajoute une version SQL durable de session et un marqueur commun pour toutes les vues privées. Les anciens SID sans version nécessitent une reconnexion. Cookie, TTL et quotas conservés ; voir les [contrats et limites M8](profile-admin.md). Les preuves M6 ci-dessous restent historiques.
+
 M7 étend la même vérification d'échéance, d'état actif et de disponibilité Redis à chaque route tickets, avec réponses privées sans cache partagé. Aucun changement de cookie, TTL ou quota : voir [contrats M7](tickets-comments.md). Le parcours HTTPS ajoute deux utilisateurs et les opérations tickets/commentaires.
 
 M6 est validée par le Product Owner. Le [rapport M6.1](local-validation-m61.md) ajoute les preuves HTTPS réelles depuis Windows vers Docker Desktop, les différences de permissions et l'arrêt ciblé avec volume conservé. Les limites Docker Desktop mentionnées dans le bilan M6 ci-dessous sont historiques ; les sorties du proxy et l'isolation du navigateur restent des limites actuelles.

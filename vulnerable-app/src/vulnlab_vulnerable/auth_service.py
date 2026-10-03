@@ -21,6 +21,7 @@ class Identity(UserMixin):
     display_name: str
     role: str
     active: bool
+    session_version: int = 0
 
     @property
     def is_active(self):
@@ -29,7 +30,12 @@ class Identity(UserMixin):
 
 def identity(record):
     return Identity(
-        record.id, record.username, record.display_name, record.role, record.active
+        record.id,
+        record.username,
+        record.display_name,
+        record.role,
+        record.active,
+        record.session_version,
     )
 
 

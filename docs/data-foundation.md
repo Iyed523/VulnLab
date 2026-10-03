@@ -1,5 +1,7 @@
 # Données PostgreSQL — M5
 
+M8 ajoute la révision `0002_session_version`, conservant les données M5 et ajoutant une version non négative de session aux utilisateurs. Voir [procédure et preuves M8](profile-admin.md) ; les descriptions de livraison M5 ci-dessous sont historiques.
+
 M4 et M4.1 sont validées par le Product Owner sur `aabc745`. M5 part de ce socle, sur `codex/m5-data-foundation`. Les PR #1 et #2 ne sont pas fusionnées. M5 reste soumise à revue ; aucune mission suivante n'est commencée. `secure-app` reste documentaire, aucun scénario volontairement vulnérable ni route métier n'est ajouté.
 
 ## Modèles et contrats

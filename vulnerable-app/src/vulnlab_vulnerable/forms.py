@@ -74,3 +74,15 @@ class CommentForm(FlaskForm):
 
 class DeleteTicketForm(FlaskForm):
     submit = SubmitField("Confirm deletion of ticket and comments")
+
+
+class ProfileForm(FlaskForm):
+    display_name = StringField(
+        "Display name",
+        validators=[InputRequired(), Length(min=1, max=100), postgres_text],
+    )
+    submit = SubmitField("Save display name")
+
+
+class AccountStatusForm(FlaskForm):
+    submit = SubmitField("Confirm account status change")

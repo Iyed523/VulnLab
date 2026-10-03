@@ -2,17 +2,17 @@
 
 from flask import (
     Blueprint,
-    abort,
     current_app,
     redirect,
     render_template,
     request,
     url_for,
 )
-from flask_login import current_user, login_required
+from flask_login import current_user
 
 from . import ticket_service as service
 from .forms import CommentForm, DeleteTicketForm, EditTicketForm, TicketForm
+from .web_controls import page_number, protected, valid_fields
 
 blueprint = Blueprint("tickets", __name__)
 
@@ -21,26 +21,8 @@ def database():
     return current_app.extensions["database"]
 
 
-def page_number(name):
-    raw = request.args.getlist(name)
-    if not raw:
-        return 1
-    if len(raw) != 1 or not raw[0].isascii() or not raw[0].isdigit() or len(raw[0]) > 4:
-        abort(400)
-    page = int(raw[0])
-    if not 1 <= page <= service.MAX_PAGE:
-        abort(400)
-    return page
-
-
-def valid_fields(allowed):
-    return not (set(request.form) - set(allowed) - {"csrf_token", "submit"}) and all(
-        len(request.form.getlist(key)) == 1 for key in request.form
-    )
-
-
 @blueprint.get("/tickets")
-@login_required
+@protected
 def index():
     page = page_number("page")
     rows, total = service.list_tickets(database(), current_user, page)
@@ -55,7 +37,7 @@ def index():
 
 
 @blueprint.route("/tickets/new", methods=["GET", "POST"])
-@login_required
+@protected
 def new():
     form = TicketForm()
     error = None
@@ -72,7 +54,7 @@ def new():
 
 
 @blueprint.get("/tickets/<int(signed=True):ticket_id>")
-@login_required
+@protected
 def detail(ticket_id):
     page = page_number("comments_page")
     ticket, comments, total = service.ticket_detail(
@@ -93,7 +75,7 @@ def detail(ticket_id):
 
 
 @blueprint.route("/tickets/<int(signed=True):ticket_id>/edit", methods=["GET", "POST"])
-@login_required
+@protected
 def edit(ticket_id):
     ticket, _, _ = service.ticket_detail(database(), current_user, ticket_id, 1)
     form = EditTicketForm(obj=ticket) if request.method == "GET" else EditTicketForm()
@@ -119,7 +101,7 @@ def edit(ticket_id):
 
 
 @blueprint.post("/tickets/<int(signed=True):ticket_id>/delete")
-@login_required
+@protected
 def delete(ticket_id):
     service.ticket_detail(database(), current_user, ticket_id, 1)
     form = DeleteTicketForm()
@@ -130,7 +112,7 @@ def delete(ticket_id):
 
 
 @blueprint.post("/tickets/<int(signed=True):ticket_id>/comments")
-@login_required
+@protected
 def comment(ticket_id):
     ticket, comments, total = service.ticket_detail(
         database(), current_user, ticket_id, 1

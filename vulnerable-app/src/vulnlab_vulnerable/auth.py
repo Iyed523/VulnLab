@@ -18,7 +18,6 @@ from flask_limiter import Limiter
 from flask_login import (
     LoginManager,
     current_user,
-    login_required,
     login_user,
     logout_user,
 )
@@ -38,6 +37,7 @@ from .session_backend import (
     LabRedisSessionInterface,
     UnavailableSessionInterface,
 )
+from .web_controls import is_protected, protected
 
 AUTH_ENDPOINTS = {"auth.login", "auth.register", "auth.logout", "auth.account"}
 
@@ -127,8 +127,9 @@ def init_auth(app):
     @manager.user_loader
     def user_loader(identifier):
         loaded = load_identity(app.extensions["database"], identifier)
-        if loaded is None:
+        if loaded is None or session.get("_auth_version") != loaded.session_version:
             session.clear()
+            return None
         return loaded
 
     @manager.unauthorized_handler
@@ -138,7 +139,7 @@ def init_auth(app):
     # Must run before CSRF and before views, including sessions whose cookie was replayed.
     @app.before_request
     def require_auth_backend():
-        if request.endpoint not in AUTH_ENDPOINTS and request.blueprint != "tickets":
+        if request.endpoint not in AUTH_ENDPOINTS and not is_protected():
             return None
         if request.blueprint == "tickets":
             # Bound the encoded 10000-character Unicode form without changing auth limits.
@@ -153,7 +154,7 @@ def init_auth(app):
                 # Trigger a fresh SQL active-state check on every auth request.
                 if not current_user.is_authenticated:
                     session.clear()
-        if request.blueprint == "tickets" and not current_user.is_authenticated:
+        if is_protected() and not current_user.is_authenticated:
             return unauthorized()
         return None
 
@@ -176,7 +177,7 @@ def init_auth(app):
 
     @app.after_request
     def private_response(response):
-        if request.endpoint in AUTH_ENDPOINTS or request.blueprint == "tickets":
+        if request.endpoint in AUTH_ENDPOINTS or is_protected():
             response.headers["Cache-Control"] = "no-store"
         return response
 
@@ -237,6 +238,7 @@ def init_auth(app):
                     session.clear()
                     session.permanent = True
                     login_user(user, remember=False, fresh=True)
+                    session["_auth_version"] = user.session_version
                     session["_expires_at"] = (
                         time.time() + app.config["AUTH_SESSION_SECONDS"]
                     )
@@ -244,14 +246,14 @@ def init_auth(app):
         return render_template("login.html", form=form, error=error), status
 
     @blueprint.post("/logout")
-    @login_required
+    @protected
     def logout():
         logout_user()
         session.clear()
         return redirect(url_for("auth.login"), code=303)
 
     @blueprint.get("/account")
-    @login_required
+    @protected
     def account():
         return render_template("account.html", logout_form=LogoutForm())
 

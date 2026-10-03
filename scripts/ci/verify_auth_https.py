@@ -169,6 +169,72 @@ def verify_tickets(client):
     print(
         "HTTPS tickets: create/read/edit/comment/delete, escaping and two-user access denial verified; private values withheld."
     )
+    return other
+
+
+def verify_accounts(client, other):
+    assert client.request("GET", "/admin/users")[0] == 403
+    status, body, _ = client.request("GET", "/account/edit")
+    assert status == 200
+    assert (
+        client.request("POST", "/account/edit", {"display_name": "Changed"})[0] == 400
+    )
+    assert (
+        client.request(
+            "POST",
+            "/account/edit",
+            {"display_name": "Changed", "role": "admin", "csrf_token": token(body)},
+        )[0]
+        == 400
+    )
+    status, _, headers = client.request(
+        "POST",
+        "/account/edit",
+        {"display_name": "<b>M8 profile</b>", "csrf_token": token(body)},
+    )
+    assert status == 303 and headers["Location"] == "/account"
+    assert "&lt;b&gt;M8 profile&lt;/b&gt;" in client.request("GET", "/account")[1]
+    admin = Client()
+    status, body, _ = admin.request("GET", "/login")
+    assert status == 200
+    assert (
+        admin.request(
+            "POST",
+            "/login",
+            {
+                "username": "admin",
+                "password": "demo-Admin-only!",
+                "csrf_token": token(body),
+            },
+        )[0]
+        == 303
+    )
+    status, body, _ = admin.request("GET", "/admin/users")
+    assert status == 200
+    for private in ("password_hash", "$argon2", "session_version", "_auth_version"):
+        assert private not in body
+    match = re.search(r'data-user-id="(-?\d+)" data-username="m7httpsbob"', body)
+    assert match, "Fictitious test user not listed"
+    target = match.group(1)
+    csrf = token(body)
+    old = other.cookie
+    for action in ("deactivate", "activate"):
+        path = f"/admin/users/{target}/{action}"
+        assert admin.request("GET", path)[0] == 405
+        assert admin.request("POST", path, {})[0] == 400
+        status, _, headers = admin.request("POST", path, {"csrf_token": csrf})
+        assert status == 303 and headers["Location"] == "/admin/users"
+    # Re-enable before this session's next request: SQL version must still revoke it.
+    assert other.request("GET", "/account/edit")[0] == 303 and other.cookie is None
+    other.cookie = old
+    assert other.request("GET", "/tickets")[0] == 303
+    assert (
+        admin.request("POST", "/admin/users/-1003/deactivate", {"csrf_token": csrf})[0]
+        == 403
+    )
+    print(
+        "HTTPS M8: own profile, admin rights, status changes and durable SID revocation verified; private values withheld."
+    )
 
 
 def main():
@@ -214,11 +280,12 @@ def main():
     replay = Client()
     replay.cookie = old
     assert replay.request("GET", "/account")[0] == 303
-    verify_tickets(client)
+    other = verify_tickets(client)
     assert client.request("GET", "/logout")[0] == 405
     status, body, _ = client.request("GET", "/account")
     assert status == 200 and "&lt;b&gt;HTTPS fictitious&lt;/b&gt;" in body
     assert "password_hash" not in body and "$argon2" not in body
+    verify_accounts(client, other)
     assert client.request("POST", "/logout", {})[0] == 400
     assert client.request("GET", "/account")[0] == 200
     authenticated = client.cookie
@@ -230,9 +297,9 @@ def main():
     status, body, _ = client.request("GET", "/login")
     assert status == 200
     csrf = token(body)
-    # Two successful logins consumed two of five attempts. Forged proxy chains
+    # Three successful logins consumed three of five attempts. Forged proxy chains
     # must not create new IP buckets; nginx replaces them with the actual peer.
-    for index in range(3):
+    for index in range(2):
         assert (
             client.request(
                 "POST",
