@@ -38,9 +38,9 @@ jobs:
       - name: Check installed dependencies
         run: uv pip check
       - name: Lint
-        run: uv run --locked ruff check --config pyproject.toml . ../scripts ../tests/ci
+        run: uv run --locked ruff check --config pyproject.toml . ../scripts ../tests/ci ../docker/browser
       - name: Check formatting
-        run: uv run --locked ruff format --check --config pyproject.toml . ../scripts ../tests/ci
+        run: uv run --locked ruff format --check --config pyproject.toml . ../scripts ../tests/ci ../docker/browser
       - name: Functional contracts (intentional vulnerable branch)
         run: uv run --locked pytest tests ../tests/ci -m "not vulnerable_behavior and not preserved_protection"
       - name: Retained protections (not remediation)
@@ -90,6 +90,15 @@ jobs:
         run: |
           docker compose --env-file .env.example -f compose.vulnerable.yaml --profile tools run --rm data-tools seed
           python3 scripts/ci/verify_auth_https.py
+      - name: M12 preparation - validate and build dedicated browser tooling
+        run: |
+          docker compose -f compose.browser.yaml config --quiet
+          docker compose -f compose.browser.yaml build
+      - name: M12 sandbox compatibility diagnostic - no XSS or prerequisite validation
+        # Diagnostic mode reports recognized sandbox incompatibilities explicitly.
+        # Gate mode (without --diagnostic) returns 2 for the same blocker.
+        # Tool errors and unexpected execution failures still fail this job.
+        run: docker compose -f compose.browser.yaml run --rm browser-preflight --diagnostic
       - name: Preserve failure diagnostics in job logs
         if: failure()
         run: |
@@ -97,4 +106,6 @@ jobs:
           docker compose --env-file .env.example -f compose.vulnerable.yaml logs --no-color --tail 100
       - name: Clean up this job's stack and volume
         if: always()
-        run: docker compose --env-file .env.example -f compose.vulnerable.yaml down --volumes --timeout 20
+        run: |
+          docker compose -f compose.browser.yaml down --timeout 20
+          docker compose --env-file .env.example -f compose.vulnerable.yaml down --volumes --timeout 20

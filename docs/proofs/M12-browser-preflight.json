@@ -1,0 +1,87 @@
+{
+  "mission": "M12 preparation only; no XSS introduced",
+  "origin": "Dedicated ephemeral containers on local Docker Desktop; no browser navigation performed",
+  "date": "2026-10-03",
+  "base_m11_sha": "a61fd1ae25d6783ea7a5aa9cbf2b323b817f3a74",
+  "source_state": "Prepared working tree, identified by file SHA-256 below; not a committed browser execution proof",
+  "environment": {
+    "desktop": "4.93.0 (240920)",
+    "engine": "29.8.1",
+    "api": "1.56",
+    "kernel": "6.18.40.1-microsoft-standard-WSL2",
+    "arch": "amd64"
+  },
+  "image": "mcr.microsoft.com/playwright/python:v1.63.0-noble@sha256:72bd171a9ffc2b4b59532aaa6210e21014d07093120dc25528870c0b840da1f0",
+  "versions": {
+    "playwright": "1.63.0",
+    "pyee": "13.0.0",
+    "greenlet": "3.2.4",
+    "typing-extensions": "4.15.0"
+  },
+  "verified_container_controls": {
+    "non_root": true,
+    "effective_capabilities": "0",
+    "no_new_privileges": 1,
+    "seccomp": 2,
+    "network": "none",
+    "personal_mounts": false,
+    "published_ports": false
+  },
+  "initial_launch_attempts": [
+    {
+      "profile": "default",
+      "exit_code": 2,
+      "failure": "No usable sandbox!"
+    },
+    {
+      "profile": "official",
+      "exit_code": 2,
+      "failure": "sys_chroot(\"/proc/self/fdinfo/\") == 0; zygote interrupted"
+    }
+  ],
+  "final_compose_attempts": [
+    {
+      "mode": "gate",
+      "exit_code": 2,
+      "result": {
+        "stage": "sandbox-launch",
+        "sandbox_verified": false,
+        "reason": "zygote-chroot-denied",
+        "network_restrictions_verified": false,
+        "lab_tls_verified": false,
+        "xss_allowed": false
+      }
+    },
+    {
+      "mode": "diagnostic",
+      "exit_code": 0,
+      "result": {
+        "stage": "sandbox-launch",
+        "sandbox_verified": false,
+        "reason": "zygote-chroot-denied",
+        "network_restrictions_verified": false,
+        "lab_tls_verified": false,
+        "xss_allowed": false
+      }
+    }
+  ],
+  "not_executed": [
+    "browser HTTP witnesses",
+    "browser TLS",
+    "XSS payload",
+    "DOM marker",
+    "reload persistence",
+    "screenshot"
+  ],
+  "xss_allowed": false,
+  "file_sha256": {
+    "compose.browser.yaml": "34df485c474379187bd27e6d8e6c839fb22156d45fcf1d1bfbebad321e9e6b16",
+    "docker/browser/Dockerfile": "a3dae9c6c37361b3f69795177d8c45a1643f416c2332cab693f3479c766fa339",
+    "docker/browser/requirements.txt": "c285c1d79ddeb04b4a8643a2a19e9f9907a2dc4847d053571a5244b24bd20d2f",
+    "docker/browser/seccomp.json": "cc3e61cabda6bbc1e53e54d27ba4d55a9d3be829b6dd1a596f4a7b31b1cc7849",
+    "docker/browser/sandbox_probe.py": "4e4b28dffd22536bc021a01aacfd41b14388882958739766d05d292d04336d83",
+    "docker/browser/sandbox_result.py": "f632309c9d7d12b56924ec15e47b07466e800808bbfd4cede8416294b1add166",
+    "docker/browser/network_policy.py": "d0f5b6efc825794c515312322c7b14e1e9cba3cd4222724f602b454fb7be7382",
+    "docker/browser/witnesses.py": "6ebab421d13ce03ca32e089a77bcdec9f028d8ac111d3b3dfa102e7851def44d"
+  }
+}
