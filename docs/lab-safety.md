@@ -1,6 +1,8 @@
 # Sécurité et isolation du laboratoire
 
-**État M3 : configurations Docker préparées et validées statiquement ; moteur inaccessible, aucun conteneur ni contrôle d’isolation effectif vérifié.** Voir [le bilan Docker](docker.md). HTTPS et les contrôles complémentaires des sorties réseau restent en M4. HTTP local est provisoire, avant toute session ou authentification. Le laboratoire doit rester exclusivement local ; le service vulnérable ne doit jamais être publié ou déployé.
+**État M4 : M3/M3-Git validées sur la base des trois jobs Linux/Windows du socle ; configuration HTTPS sur 127.0.0.1:8443 vérifiée dans la CI Linux M4.** Le moteur Docker Desktop reste inaccessible. Les preuves Linux CI M4 et leurs limites sont consignées dans [docker.md](docker.md), sans affirmation de validation Windows Docker. Le laboratoire reste exclusivement local, avec certificats privés exclus du dépôt et de la construction.
+
+La restriction des sorties n’est pas une garantie globale : app/db/redis restent sur les réseaux internes, tandis que le proxy est sur ingress pour la publication loopback. Un témoin local, disponible lors d’un contrôle positif, sert à vérifier les refus des services internes et l’accès encore possible du proxy. Aucune destination tierce n’est sondée. Une politique de sortie exhaustive du proxy demanderait une décision de filtrage de l’environnement ; aucune modification système globale n’est effectuée.
 
 ## Exigences pour les missions futures
 
@@ -13,12 +15,12 @@
 | Sorties réseau | Restreindre les sorties et vérifier leur blocage effectif sous Docker Desktop ; une configuration déclarative seule ne prouve pas le résultat |
 | Conteneurs | Aucun mode privilégié, montage du socket Docker ou réseau hôte ; limiter capacités et privilèges au nécessaire |
 | Base de données | Utilisateur SQL applicatif non administrateur, droits minimaux ; séparer les besoins éventuels de migration |
-| Transport et navigateur | HTTPS local, hôtes distincts pour les deux versions, cookies et sessions distincts ; noms et ports à définir |
+| Transport et navigateur | HTTPS local, vulnerable.vulnlab.test sur loopback 8443 ; secure.vulnlab.test réservé ; confiance explicite, séparation future des cookies et sessions à vérifier |
 | Secrets | Secrets, clés privées et certificats locaux exclus de Git ; modèles de configuration sans secret réel |
 | Remise à zéro | Procédure ciblée par version ; vérifier qu’elle ne modifie ni les volumes ni les données de l’autre version |
 | Automatisation | GitHub Actions limité aux vérifications, aucun déploiement ni publication automatique du service vulnérable |
 
-Les preuves d’isolation devront préciser l’environnement Docker Desktop, les commandes, les résultats observés et les limites. Les flux nécessaires entre Nginx, Flask et les stockages devront rester possibles tout en interdisant les accès non nécessaires. La méthode exacte sera choisie et validée dans la mission infrastructure.
+Les preuves d’isolation devront préciser l’environnement Docker Desktop, les commandes, les résultats observés et les limites. Les flux nécessaires entre Nginx, Flask et les stockages devront rester possibles tout en interdisant les accès non nécessaires. Les décisions actuelles et la proposition de filtrage complémentaire figurent dans l’[ADR M4](decisions/0004-local-https.md).
 
 ## Limite du navigateur et preuves XSS
 

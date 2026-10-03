@@ -38,11 +38,11 @@ jobs:
       - name: Check installed dependencies
         run: uv pip check
       - name: Lint
-        run: uv run --locked ruff check .
+        run: uv run --locked ruff check --config pyproject.toml . ../scripts ../tests/ci
       - name: Check formatting
-        run: uv run --locked ruff format --check .
+        run: uv run --locked ruff format --check --config pyproject.toml . ../scripts ../tests/ci
       - name: Check installation
-        run: uv run --locked pytest
+        run: uv run --locked pytest tests ../tests/ci
       - name: Build wheel
         run: uv run --locked --group build -- uv build --wheel --no-build-isolation
 
@@ -55,7 +55,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Validate Compose
-        run: docker compose --env-file .env.example -f compose.vulnerable.yaml config --quiet
+        # Clé éphémère appartenant au runner, lisible par son groupe uniquement.
+        # Aucun certificat privé n'est téléversé comme artefact.
+        run: |
+          python3 scripts/generate_local_certificate.py
+          echo "TLS_KEY_GID=$(id -g)" >> "$GITHUB_ENV"
+          docker compose --env-file .env.example -f compose.vulnerable.yaml config --quiet
+      - name: Validate generated certificate
+        run: openssl verify -CAfile certs/local/vulnerable/server.crt -verify_hostname vulnerable.vulnlab.test certs/local/vulnerable/server.crt
       - name: Build application image
         run: docker compose --env-file .env.example -f compose.vulnerable.yaml build app
       - name: Start dedicated stack

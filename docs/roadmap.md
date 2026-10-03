@@ -1,13 +1,13 @@
 # Roadmap
 
-Chaque étape nécessite une revue du Team Lead et une validation du Product Owner avant de passer à la suivante. M1 a été revue et validée par le Product Owner selon le cadrage M2. M2 est également validée. M3 est soumise à revue, avec Docker Linux vérifié en CI et Docker Desktop local non vérifié ; M4 n’est pas commencée.
+Chaque étape nécessite une revue du Team Lead et une validation du Product Owner. M1, M2, M3 et M3-Git sont validées selon le cadrage M4, avec les limites Docker Desktop et sorties réseau. M4 reste soumise à revue ; M5 n’est pas commencée.
 
-| Étape | Contenu | État à la livraison M3 |
+| Étape | Contenu | État à la livraison M4 |
 | --- | --- | --- |
 | 1 | Conception | Validée par le Product Owner selon le cadrage fourni |
 | 2 — M1 | Dépôt et documentation de référence | Validés |
 | 3 — M2 | Environnement Python, sélection des versions, dépendances et CI minimale | Validée ; Python Windows/Linux réussis en CI |
-| 4 — M3 puis M4 | Premier socle Docker ; puis HTTPS et vérifications complémentaires d’isolation | M3 soumise à revue, Docker Linux réussi en CI ; Docker Desktop non vérifié ; M4 à venir |
+| 4 — M3 puis M4 | Premier socle Docker ; puis HTTPS et vérifications complémentaires d’isolation | M3 validée ; M4 HTTPS et témoins réseau soumis à revue ; Docker Desktop non vérifié |
 | 5 | Données fictives et socle fonctionnel | À venir |
 | 6 | Tests communs et référence Git traçable du socle | À venir |
 | 7 | Introduction des vulnérabilités une par une | À venir |
@@ -32,4 +32,8 @@ Les versions Python, uv, Flask, Pytest, Ruff et Hatchling ainsi que le verrou et
 
 Références : [ADR initial](decisions/0001-architecture.md), [architecture](architecture.md), [autorisations](authorization-matrix.md), [sécurité locale](lab-safety.md).
 
-M3-Git : code publié, [PR brouillon #1](https://github.com/Iyed523/VulnLab/pull/1) ouverte, trois jobs CI réussis sur `4a82ae2`, protections de main et squash merge configurés et vérifiés via API. Aucune fusion. Voir [git-workflow.md](git-workflow.md). M3 demeure soumise à revue.
+M3-Git : code publié, [PR brouillon #1](https://github.com/Iyed523/VulnLab/pull/1) ouverte, trois jobs CI réussis sur `4a82ae2`, protections de main et squash merge configurés et vérifiés via API. Aucune fusion. Voir [git-workflow.md](git-workflow.md). M3 et M3-Git sont validées selon le cadrage M4.
+
+M4 dépend de chore/bootstrap-lab au commit 15284a8 et de la PR #1 non fusionnée ; la branche dédiée est codex/m4-local-https. La PR M4 cible ce socle et devra cibler main après sa fusion autorisée. Voir [ADR M4](decisions/0004-local-https.md) et [docker.md](docker.md). Le filtrage exhaustif des sorties du proxy reste une décision ouverte, sans modification globale du poste.
+
+[PR M4 #2](https://github.com/Iyed523/VulnLab/pull/2) brouillon dépendante du socle ; [CI b3190fd](https://github.com/Iyed523/VulnLab/actions/runs/36919627007) verte sur Python Windows/Linux et Docker Linux. M4 reste soumise à revue, avec sortie possible du proxy et Docker Desktop non vérifié.

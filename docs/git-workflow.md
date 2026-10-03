@@ -44,3 +44,7 @@ Le refus initial de lecture des logs sans authentification est résolu. Aucun je
 La [PR #1](https://github.com/Iyed523/VulnLab/pull/1) est ouverte en brouillon. La [CI sur 4a82ae2](https://github.com/Iyed523/VulnLab/actions/runs/36857188426) a réussi pour Python Windows, Python Linux et Docker Linux après correction des tmpfs YAML, du réseau d’entrée du proxy et du socket de contrôle Gunicorn.
 
 Réglages appliqués et relus via API : squash seul autorisé, auto-merge désactivé ; main exige les trois jobs GitHub Actions, une branche à jour, la résolution des conversations et un historique linéaire, avec application aux administrateurs. Push forcé et suppression de main interdits. Une PR est requise, avec zéro approbation obligatoire pour ce dépôt individuel. Aucun merge effectué.
+
+## Dépendance M4
+
+Le cadrage M4 valide M1 à M3-Git. La branche codex/m4-local-https part de chore/bootstrap-lab à 15284a8, car main ne contient encore que l’amorçage. La [PR #2](https://github.com/Iyed523/VulnLab/pull/2) reste en brouillon vers chore/bootstrap-lab et devra être reciblée vers main après fusion explicitement autorisée du socle. Aucune fusion de #1 ou #2 n’est effectuée. M4 est soumise à revue ; M5 n’est pas commencée.
