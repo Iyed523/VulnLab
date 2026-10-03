@@ -1,4 +1,4 @@
-# Audit pédagogique — M11 et préparation M12
+# Audit pédagogique — M11, préparation M12 et sandbox M12.1
 
 Périmètre : application fictive sur les ressources exclusivement locales du runner CI. Aucun audit exhaustif, test tiers ou garantie générale de sécurité. Baseline fonctionnel préservé par le tag annoté `baseline-functional-v1` sur bd029b5.
 
@@ -57,3 +57,27 @@ protections, wheel, 42 paquets compatibles, Ruff/formatage incluant les scripts
 et l'outillage navigateur, Compose, actionlint, liens locaux et diff propres.
 Inventaires Docker avant/après identiques : 11 conteneurs préservés avec leurs
 états et dates, 3 volumes, 10 réseaux. Aucun audit octet par octet des volumes.
+
+## M12.1 — sandbox vérifiée, aucune nouvelle faiblesse
+
+La [preuve réelle nettoyée](proofs/M12-1-browser-sandbox.json) distingue le refus
+du filtre seccomp du droit noyau dans le user namespace. Parent CapEff/CapBnd
+nuls : EPERM même avec le profil adapté ; namespace enfant créé avec les deux
+profils : chroot refusé uniquement avec le profil officiel. Seule la condition
+de capacité Docker de la règle chroot est retirée ; pas de capacité ajoutée.
+Voir le [rapport, sources et limites](m12-1-browser-sandbox.md).
+
+Chromium complet 153.0.8010.12 sur Playwright 1.63.0, même image épinglée :
+sandbox Namespace, namespaces PID/réseau, seccomp-BPF et TSYNC actifs.
+Processus navigateur/rendu non-root, CapEff/CapPrm nuls, NoNewPrivs=1 et Seccomp=2 ;
+filtre supplémentaire du renderer contrôlé. Témoins HTTP et WebSocket positifs
+réussis, accès interdit direct/redirection/chaîne et WebSocket refusés ;
+aucune requête/handshake supplémentaire reçu par le témoin interdit.
+Porte conforme exit 0 ; contrôle négatif réel avec profil officiel exit 2.
+
+131 tests Python locaux réussis : 20 fonctionnels et 111 protections,
+dont 49 unitaires navigateur. Ruff/formatage, Compose, actionlint et diff propres.
+La CI utilise désormais une porte obligatoire, sans succès diagnostic permissif,
+et conserve les suites M11. Aucun changement applicatif, lab/TLS navigateur,
+XSS, capture DOM, remédiation, fusion, déploiement ou tag. L'observation du
+médiateur n'établit pas une isolation globale de tous les flux/protocoles.

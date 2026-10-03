@@ -1,0 +1,160 @@
+{
+  "mission": "M12.1 sandbox and local witnesses only; no lab TLS or XSS",
+  "date": "2026-10-03",
+  "origin": "Local dedicated ephemeral Docker Desktop Linux containers, network none",
+  "base_m12_sha": "3f39c5b40bf90f48169aa8bed8e6b50577d140e1",
+  "environment": {
+    "desktop": "4.93.0 (240920)",
+    "engine": "29.8.1",
+    "api": "1.56",
+    "kernel": "6.18.40.1-microsoft-standard-WSL2"
+  },
+  "image": "mcr.microsoft.com/playwright/python:v1.63.0-noble@sha256:72bd171a9ffc2b4b59532aaa6210e21014d07093120dc25528870c0b840da1f0",
+  "differential_controls": [
+    {
+      "profile": "official",
+      "exit_code": 0,
+      "observation": {
+        "parent": {
+          "uid": 1001,
+          "CapEff": "0000000000000000",
+          "CapBnd": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "parent_chroot_errno": 1,
+        "child": {
+          "uid": 0,
+          "CapEff": "000001ffffffffff",
+          "CapBnd": "000001ffffffffff",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "namespace_chroot_errno": 1,
+        "namespace_chroot_succeeded": false,
+        "new_user_namespace": true
+      }
+    },
+    {
+      "profile": "chroot-adapted",
+      "exit_code": 0,
+      "observation": {
+        "parent": {
+          "uid": 1001,
+          "CapEff": "0000000000000000",
+          "CapBnd": "0000000000000000",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "parent_chroot_errno": 1,
+        "child": {
+          "uid": 0,
+          "CapEff": "000001ffffffffff",
+          "CapBnd": "000001ffffffffff",
+          "NoNewPrivs": "1",
+          "Seccomp": "2"
+        },
+        "namespace_chroot_errno": 0,
+        "namespace_chroot_succeeded": true,
+        "new_user_namespace": true
+      }
+    }
+  ],
+  "negative_browser_gate": {
+    "exit_code": 2,
+    "result": {
+      "stage": "sandbox-launch",
+      "sandbox_verified": false,
+      "reason": "zygote-chroot-denied",
+      "network_restrictions_verified": false,
+      "lab_tls_verified": false,
+      "xss_allowed": false
+    }
+  },
+  "chromium_version": "153.0.8010.12",
+  "sandbox_status": "Sandbox Status\nLayer 1 Sandbox\tNamespace\nPID namespaces\tYes\nNetwork namespaces\tYes\nSeccomp-BPF sandbox\tYes\nSeccomp-BPF sandbox supports TSYNC\tYes\nPtrace Protection with Yama LSM (Broker)\tYes\nPtrace Protection with Yama LSM (Non-broker)\tNo\n\nYou are adequately sandboxed.",
+  "positive_gate": {
+    "exit_code": 0,
+    "result": {
+      "sandbox_verified": true,
+      "sandbox_layers": {
+        "Layer 1 Sandbox": "Namespace",
+        "PID namespaces": "Yes",
+        "Network namespaces": "Yes",
+        "Seccomp-BPF sandbox": "Yes",
+        "Seccomp-BPF sandbox supports TSYNC": "Yes"
+      },
+      "process_controls": [
+        {
+          "type": "browser",
+          "uid": 1001,
+          "CapEff": "0",
+          "CapPrm": "0",
+          "NoNewPrivs": 1,
+          "Seccomp": 2,
+          "Seccomp_filters": 2
+        },
+        {
+          "type": "renderer",
+          "uid": 1001,
+          "CapEff": "0",
+          "CapPrm": "0",
+          "NoNewPrivs": 1,
+          "Seccomp": 2,
+          "Seccomp_filters": 3
+        },
+        {
+          "type": "renderer",
+          "uid": 1001,
+          "CapEff": "0",
+          "CapPrm": "0",
+          "NoNewPrivs": 1,
+          "Seccomp": 2,
+          "Seccomp_filters": 3
+        },
+        {
+          "type": "renderer",
+          "uid": 1001,
+          "CapEff": "0",
+          "CapPrm": "0",
+          "NoNewPrivs": 1,
+          "Seccomp": 2,
+          "Seccomp_filters": 3
+        }
+      ],
+      "network_restrictions_verified": true,
+      "local_witnesses": {
+        "positive_http": true,
+        "positive_websocket": true,
+        "allowed_http_and_relative_redirect": true,
+        "direct_denied": true,
+        "redirect_denied": true,
+        "redirect_chain_denied": true,
+        "websocket_denied": true,
+        "forbidden_http_requests_after_filter": 0,
+        "forbidden_websocket_handshakes_after_filter": 0
+      },
+      "lab_tls_verified": false,
+      "xss_allowed": false
+    }
+  },
+  "scope_limits": [
+    "No lab connection or browser TLS verified",
+    "No XSS introduced or executed",
+    "Request mediation is not proof of all browser/native protocols or global host isolation",
+    "Child namespace capabilities are scoped to that namespace; Docker parent and browser/renderers CapEff are zero"
+  ],
+  "source_state": "Prepared working tree before publication; SHA-256 of source bytes normalized to LF, matching Git text normalization",
+  "source_sha256_lf": {
+    "compose.browser.yaml": "8f441137902a0ba69120d700aa6664cf79d7d673ede0426bf6a0fd84fef9daa6",
+    "docker/browser/Dockerfile": "05ef0902e3df2a3b0938198d0908de26139398330351ccb87c1070d64b18da7d",
+    "docker/browser/seccomp.json": "cc3e61cabda6bbc1e53e54d27ba4d55a9d3be829b6dd1a596f4a7b31b1cc7849",
+    "docker/browser/seccomp-chroot.json": "a418fd56afc560974800176ca16b13c83109fe6088229faf3a55f8fd23f68a43",
+    "docker/browser/namespace_probe.py": "7f88b78aebfc9eb5665768486c65175dd69bedfa462f5bea7837ca2edce4228e",
+    "docker/browser/sandbox_probe.py": "b5dd18be232f968aaa3f125f1a0b903862ab1e59cb4ccee0bdbbb3ba5f308a2f",
+    "docker/browser/network_policy.py": "c3e22de5b975d145a382bb81315ec903d3316b7d5ce6b5cf31c005f645dec044",
+    "docker/browser/sandbox_result.py": "3eae35e506d1ea828cf6d5e5955a9d512e07d137ed3b3151fc69058e1f9aa609",
+    "docker/browser/witnesses.py": "b3df1a689d1a66efa015b3cf14f1de5749fd54507dc371aa6b35a33fc71e1a03",
+    "scripts/ci/verify_browser_namespace.py": "782f511973183754f4880766d5f12e399245cb7b79dbbc36701611381d64af80"
+  }
+}

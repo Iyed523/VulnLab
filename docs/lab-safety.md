@@ -28,12 +28,14 @@ Les preuves d’isolation devront préciser l’environnement Docker Desktop, le
 
 ## Limite du navigateur et preuves XSS
 
-M12 livre [la préparation et un prérequis bloqué](m12-browser-preparation.md),
-**sans introduction de XSS** : Chromium sandboxé ne démarre pas dans le conteneur
-non-root sans capacités. Un diagnostic CI reconnu n'est pas une validation du
-navigateur. Les témoins de filtrage/redirection et TLS navigateur restent non
-exécutés. Aucun effet DOM ni capture XSS revendiqué ; décision Product Owner
-nécessaire avant reprise de l'introduction conditionnelle.
+M12 livrait [un prérequis bloqué](m12-browser-preparation.md).
+[M12.1](m12-1-browser-sandbox.md) vérifie désormais la sandbox Chromium et les
+témoins HTTP/redirection/WebSocket locaux, dans un conteneur réseau none,
+non-root sans capacités ajoutées. Une règle seccomp chroot est adaptée ; les
+contrôles noyau restent actifs. La porte obligatoire échoue sur tout prérequis
+M12.1 manquant. **Aucun XSS ni connexion au laboratoire** : le TLS navigateur
+reste non vérifié et nécessite une étape ultérieure après revue. Un filtre de
+requêtes n'est pas une preuve de filtrage global de tous les flux du navigateur.
 
 L’isolation du serveur ne garantit pas celle du navigateur. Celui-ci s’exécute sur le poste hôte et peut avoir accès à d’autres sites ou ressources que les conteneurs. Des hôtes distincts ne suffisent pas à garantir toute l’isolation du navigateur.
 

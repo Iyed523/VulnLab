@@ -1,6 +1,8 @@
 """Preparation-only checks: no browser execution and no XSS payload."""
 
+import asyncio
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -69,10 +71,10 @@ def test_redirect_is_rejected_before_following(location):
 
 
 class Context:
-    def route(self, pattern, callback):
+    async def route(self, pattern, callback):
         self.callback = callback
 
-    def route_web_socket(self, pattern, callback):
+    async def route_web_socket(self, pattern, callback):
         self.websocket_callback = callback
 
 
@@ -82,7 +84,7 @@ class Response:
         self.headers = {} if location is None else {"location": location}
         self.disposed = False
 
-    def dispose(self):
+    async def dispose(self):
         self.disposed = True
 
 
@@ -96,23 +98,26 @@ class Route:
         self.aborted = False
         self.fulfilled = False
 
-    def fetch(self, **kwargs):
+    async def fetch(self, **kwargs):
         self.calls.append(kwargs)
         return next(self.responses)
 
-    def abort(self, reason):
+    async def abort(self, reason):
         assert reason == "blockedbyclient"
         self.aborted = True
 
-    def fulfill(self, response):
+    async def fulfill(self, response):
         assert response.status == 200
         self.fulfilled = True
 
 
 def run_route(route):
-    context = Context()
-    policy.install_policy(context, ALLOWED)
-    context.callback(route)
+    async def run():
+        context = Context()
+        await policy.install_policy(context, ALLOWED)
+        await context.callback(route)
+
+    asyncio.run(run())
 
 
 def test_forbidden_request_never_fetches():
@@ -168,7 +173,7 @@ def test_redirect_without_location_fails_closed():
 
 def test_unknown_fetch_error_is_not_success_or_network_blockage():
     class BrokenRoute(Route):
-        def fetch(self, **kwargs):
+        async def fetch(self, **kwargs):
             raise RuntimeError("tool failure")
 
     route = BrokenRoute("https://vulnerable.vulnlab.test:8443/a", [])
@@ -202,3 +207,63 @@ def test_explicit_sandbox_incompatibility_classified(message, reason):
 def test_tool_execution_errors_are_never_sandbox_validation(message):
     with pytest.raises(RuntimeError, match="Unexpected browser execution error"):
         result.classify_launch_error(message)
+
+
+SANDBOX_ROWS = [
+    ["Layer 1 Sandbox", "Namespace"],
+    ["PID namespaces", "Yes"],
+    ["Network namespaces", "Yes"],
+    ["Seccomp-BPF sandbox", "Yes"],
+    ["Seccomp-BPF sandbox supports TSYNC", "Yes"],
+]
+
+
+def test_exact_verified_sandbox_layers_accepted():
+    assert result.verify_sandbox_rows(SANDBOX_ROWS) == dict(SANDBOX_ROWS)
+
+
+@pytest.mark.parametrize("index", range(5))
+@pytest.mark.parametrize("missing", [False, True])
+def test_unverified_sandbox_layer_never_accepted(index, missing):
+    rows = [row.copy() for row in SANDBOX_ROWS]
+    if missing:
+        del rows[index]
+    else:
+        rows[index][1] = "No"
+    with pytest.raises(RuntimeError, match="Unverified Chromium sandbox prerequisite"):
+        result.verify_sandbox_rows(rows)
+
+
+def test_seccomp_adaptation_changes_only_chroot_condition_and_comment():
+    directory = Path(__file__).parents[2] / "docker/browser"
+    original = json.loads((directory / "seccomp.json").read_text())
+    adapted = json.loads((directory / "seccomp-chroot.json").read_text())
+    expected = json.loads(json.dumps(original))
+    rules = [rule for rule in expected["syscalls"] if rule["names"] == ["chroot"]]
+    assert len(rules) == 1
+    assert rules[0]["includes"] == {"caps": ["CAP_SYS_CHROOT"]}
+    assert rules[0]["action"] == "SCMP_ACT_ALLOW"
+    rules[0]["includes"] = {}
+    rules[0]["comment"] = (
+        "M12.1: allow chroot syscall; kernel capability checks remain in the calling "
+        "user namespace. No container capability is added."
+    )
+    assert adapted == expected
+
+
+def test_websocket_policy_closes_without_connecting_to_server():
+    context = Context()
+    asyncio.run(policy.install_policy(context, ALLOWED))
+
+    class Socket:
+        closed = False
+
+        async def close(self):
+            self.closed = True
+
+        async def connect_to_server(self):
+            raise AssertionError("Forbidden WebSocket connected")
+
+    socket = Socket()
+    asyncio.run(context.websocket_callback(socket))
+    assert socket.closed
