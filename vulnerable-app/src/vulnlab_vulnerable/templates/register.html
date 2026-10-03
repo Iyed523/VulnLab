@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}<h1>Register a fictitious account</h1>
+<p>Password: 12–128 characters; no silent truncation. Never reuse a personal password.</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post">{{ form.csrf_token }}
+<p>{{ form.username.label }} {{ form.username(autocomplete='username', maxlength=128) }}</p>
+<p>{{ form.display_name.label }} {{ form.display_name(maxlength=100) }}</p>
+<p>{{ form.password.label }} {{ form.password(autocomplete='new-password', minlength=12, maxlength=128) }}</p>
+{{ form.submit }}</form>{% endblock %}

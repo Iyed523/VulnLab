@@ -23,5 +23,7 @@ services:
       DB_PASSWORD: ${APP_DB_PASSWORD:?Set fictitious APP_DB_PASSWORD}
       MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Set fictitious MIGRATION_DB_PASSWORD}
       VULNLAB_EPHEMERAL_DB: ci-only
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set fictitious REDIS_PASSWORD}
     depends_on:
       db: {condition: service_healthy}

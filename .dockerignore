@@ -8,6 +8,11 @@
 !vulnerable-app/src/
 !vulnerable-app/src/vulnlab_vulnerable/
 !vulnerable-app/src/vulnlab_vulnerable/*.py
+!vulnerable-app/src/vulnlab_vulnerable/templates/
+!vulnerable-app/src/vulnlab_vulnerable/templates/*.html
+!vulnerable-app/src/vulnlab_vulnerable/static/
+!vulnerable-app/src/vulnlab_vulnerable/static/css/
+!vulnerable-app/src/vulnlab_vulnerable/static/css/*.css
 !vulnerable-app/tests/
 !vulnerable-app/tests/*.py
 !vulnerable-app/integration/

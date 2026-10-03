@@ -1,0 +1,10 @@
+# Dedicated local validation image; use an explicit fresh project name.
+services:
+  app:
+    image: vulnlab-m61-validation-app:m6.1
+    labels:
+      vulnlab.validation.mission: M6.1
+  data-tools:
+    image: vulnlab-m61-validation-app:m6.1
+    labels:
+      vulnlab.validation.mission: M6.1

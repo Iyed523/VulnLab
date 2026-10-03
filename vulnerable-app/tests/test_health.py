@@ -28,10 +28,17 @@ def test_unknown_route_has_no_diagnostics():
         assert diagnostic not in body
 
 
-def test_only_health_get_route_is_registered():
+def test_health_and_m6_routes_are_registered_with_expected_methods():
     app = create_app()
-    rules = list(app.url_map.iter_rules())
-    assert len(rules) == 1
-    assert rules[0].rule == "/healthz"
-    assert rules[0].methods == {"GET", "HEAD", "OPTIONS"}
+    rules = {rule.rule: rule.methods for rule in app.url_map.iter_rules()}
+    assert set(rules) == {
+        "/healthz",
+        "/register",
+        "/login",
+        "/logout",
+        "/account",
+        "/static/<path:filename>",
+    }
+    assert rules["/healthz"] == {"GET", "HEAD", "OPTIONS"}
+    assert rules["/logout"] == {"POST", "OPTIONS"}
     assert app.test_client().post("/healthz").status_code == 405

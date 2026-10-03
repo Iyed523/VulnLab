@@ -59,6 +59,7 @@ jobs:
         # Aucun certificat privé n'est téléversé comme artefact.
         run: |
           python3 scripts/generate_local_certificate.py
+          python3 scripts/generate_session_key.py
           echo "TLS_KEY_GID=$(id -g)" >> "$GITHUB_ENV"
           docker compose --env-file .env.example -f compose.vulnerable.yaml config --quiet
       - name: Validate generated certificate
@@ -79,6 +80,8 @@ jobs:
         run: docker compose --env-file .env.example -f compose.vulnerable.yaml -f compose.ci.yaml --profile ci run --rm integration-test
       - name: Verify local infrastructure after database tests
         run: python3 scripts/ci/verify_docker.py
+      - name: Verify authentication through local HTTPS proxy
+        run: python3 scripts/ci/verify_auth_https.py
       - name: Preserve failure diagnostics in job logs
         if: failure()
         run: |

@@ -21,7 +21,7 @@ COPY vulnerable-app/migrations ./migrations
 COPY vulnerable-app/alembic.ini ./alembic.ini
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 USER 10001:10001
-CMD ["/build/.venv/bin/python", "-m", "pytest", "-p", "no:cacheprovider", "integration", "-v"]
+CMD ["/build/.venv/bin/python", "-m", "pytest", "-p", "no:cacheprovider", "integration", "-v", "--tb=short"]
 
 FROM python:3.13.15-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26 AS runtime
 RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app
@@ -31,4 +31,4 @@ WORKDIR /opt
 USER 10001:10001
 EXPOSE 8000
 STOPSIGNAL SIGTERM
-CMD ["gunicorn", "--no-control-socket", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "30", "--graceful-timeout", "15", "--worker-tmp-dir", "/tmp", "--access-logfile", "-", "--error-logfile", "-", "vulnlab_vulnerable:create_app()"]
+CMD ["gunicorn", "--no-control-socket", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "30", "--graceful-timeout", "15", "--worker-tmp-dir", "/tmp", "--access-logfile", "-", "--access-logformat", "%(m)s %(s)s", "--error-logfile", "-", "vulnlab_vulnerable:create_app()"]
