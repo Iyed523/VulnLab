@@ -1,5 +1,7 @@
 # M8 — Profil et administration minimale de référence
 
+M8 et corrections validées par le Product Owner sur `b9f5a771cfc39e677601f69949268862ca262a56`. Les trois jobs finaux sont verts avec 82 tests Python et 236 tests PostgreSQL/Redis ; voir la [CI de livraison](https://github.com/Iyed523/VulnLab/actions/runs/37016447314). Les mentions de revue ci-dessous décrivent la livraison historique. M9 prépare une validation Windows distincte et l'intégration : [rapport M9](baseline-consolidation-m9.md).
+
 M8 part de M7 validée `b12bc1a6ed4ca7046032ffd0112638767f564e84`, dépôt propre, sur `codex/m8-profile-admin`. Les PR précédentes restent en brouillon, sans fusion. Implémentation de référence uniquement dans `vulnerable-app`, sans faiblesse volontaire ni modification de `secure-app`.
 
 ## Contrats HTTP

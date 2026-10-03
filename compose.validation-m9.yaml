@@ -1,0 +1,10 @@
+# Fresh M9 project and image; preserves M6.1 images and volumes.
+services:
+  app:
+    image: vulnlab-m9-validation-app:m8
+    labels:
+      vulnlab.validation.mission: M9
+  data-tools:
+    image: vulnlab-m9-validation-app:m8
+    labels:
+      vulnlab.validation.mission: M9

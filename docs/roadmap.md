@@ -1,6 +1,6 @@
 # Roadmap
 
-État courant : M1 à M7 validées, M8 profil/administration minimale soumise à revue. Voir [M8](profile-admin.md). Les états M4 ci-dessous sont historiques ; aucune mission suivante n'est commencée.
+État courant : M1 à M8 et corrections validées. M9 consolide les preuves locales et prépare l'intégration sans fusion ; validation Windows complétée le 3 octobre 2026, pile M9 arrêtée et conservée, M6.1/securevault préservées. Voir [rapport et plan M9](baseline-consolidation-m9.md) ; revue Product Owner encore requise. Les états M4 ci-dessous sont historiques ; les futures faiblesses et secure-app ne sont pas commencés. Le tag annoté baseline-functional-v1 attend fusions autorisées et CI finale main verte.
 
 Chaque étape nécessite une revue du Team Lead et une validation du Product Owner. M1, M2, M3 et M3-Git sont validées selon le cadrage M4, avec les limites Docker Desktop et sorties réseau. M4 reste soumise à revue ; M5 n’est pas commencée.
 

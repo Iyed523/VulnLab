@@ -2,7 +2,7 @@
 
 VulnLab est un portfolio pédagogique de sécurité applicative fondé sur une application fictive de gestion de tickets privés. Il permettra de comparer une faiblesse volontaire, sa démonstration locale et sa correction vérifiée.
 
-**M1 à M7 validées ; M8 soumise à revue.** Le socle ajoute profil limité au nom affiché, liste administrative et statut actif des utilisateurs, avec révocation durable des sessions. Tickets privés, commentaires, sessions Redis et CSRF conservés. Aucune faiblesse volontaire. Voir les [contrats M8](docs/profile-admin.md), les [contrats M7](docs/tickets-comments.md) et le [rapport Docker Desktop M6.1](docs/local-validation-m61.md). `/healthz` reste indépendant des services ; les sorties possibles du proxy restent une limite.
+**M1 à M8 validées ; M9/M9.1 en consolidation et revue.** Profil limité au nom affiché, administration minimale, révocation durable, tickets privés et commentaires constituent le socle de référence sans faiblesse volontaire. Voir le [rapport et plan d'intégration M9/M9.1](docs/baseline-consolidation-m9.md), les [contrats M8](docs/profile-admin.md) et les [preuves Windows M6.1](docs/local-validation-m61.md). M3 est intégré via PR #8 ; M4 attend revue de sa PR #9 réconciliée, puis les PR dépendantes. Aucun tag créé. `/healthz` reste indépendant des services ; les sorties possibles du proxy restent une limite.
 
 ## Deux versions prévues
 
@@ -74,7 +74,7 @@ VulnLab/
 - [Roadmap et choix des scénarios](docs/roadmap.md)
 - [Règles des prochaines missions](AGENTS.md)
 
-La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M8 part de M7 validée `b12bc1a` sur `codex/m8-profile-admin`, dépendante de `codex/m7-tickets-comments` et des PR antérieures. Aucune PR n'est fusionnée. M8 attend la revue finale ; aucune mission suivante n'est commencée.
+La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M8 est validée sur `b9f5a77`. M9.1 réconcilie uniquement M4 avec main déjà intégré ; la convention de branches et les documents sont livrés séparément dans la consolidation dépendante de M8. Aucune fusion réalisée par M9.1, aucun tag créé. La validation Windows M9 a réussi le 3 octobre avec Docker Desktop 4.93.0, moteur Linux 29.8.1 ; la pile dédiée est arrêtée et conservée, M6.1/securevault inchangées dans les contrôles d'inventaire. Les futures faiblesses restent hors périmètre.
 
 L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local a fait l’objet de la validation M6.1, distincte de la CI M7. Les clés, outils, caches et environnements ne sont pas versionnés.
 
