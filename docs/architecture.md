@@ -4,6 +4,8 @@ M1, M2, M3 et M3-Git sont validées selon le cadrage M4. M3 ajoute une fabrique 
 
 ## Composants et responsabilités
 
+M7 réalise les tickets privés et commentaires de référence, avec politique SQL centralisée, pagination bornée, transactions et contrôle de session étendu. Voir [tickets-comments.md](tickets-comments.md). Les modèles M5 sont conservés ; `secure-app` et les faiblesses pédagogiques restent futurs. Les descriptions M1–M6 ci-dessous sont historiques.
+
 M6 réalise l'authentification de référence dans `vulnerable-app` : formulaires Jinja locaux, identité Flask-Login, sessions et compteurs Redis, CSRF, account en lecture seule et logout POST. Les contrats et limites effectivement testées sont décrits dans [auth-sessions.md](auth-sessions.md). Les routes de tickets/commentaires, les faiblesses pédagogiques et `secure-app` restent futures ; les passages historiques M1–M5 ci-dessous décrivent leur état lors de ces missions.
 
 M5 réalise le socle de persistance de la seule application de référence : configuration SQL sans connexion à l'import, modèles users/tickets/comments, migrations et fixtures explicites. Aucune route métier ou autorisation n'est encore réalisée ; les composants fonctionnels ci-dessous restent prévus. Voir le [guide M5](data-foundation.md) et l'[ADR 0005](decisions/0005-data-foundation.md).

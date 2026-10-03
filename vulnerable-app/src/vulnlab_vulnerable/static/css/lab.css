@@ -7,3 +7,6 @@ input { font: inherit; padding: .6rem; max-width: 100%; }
 input[type=submit] { background: #174d76; color: white; border: 0; cursor: pointer; }
 [role=alert] { color: #9b2333; }
 dt { font-weight: bold; } dd { margin: .3rem 0 1rem; }
+textarea, select { font: inherit; padding: .6rem; max-width: 100%; width: 100%; box-sizing: border-box; }
+.user-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+details { margin: 1rem 0; } article { border-top: 1px solid #ccd5dc; }

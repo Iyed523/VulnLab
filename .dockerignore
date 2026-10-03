@@ -10,6 +10,8 @@
 !vulnerable-app/src/vulnlab_vulnerable/*.py
 !vulnerable-app/src/vulnlab_vulnerable/templates/
 !vulnerable-app/src/vulnlab_vulnerable/templates/*.html
+!vulnerable-app/src/vulnlab_vulnerable/templates/tickets/
+!vulnerable-app/src/vulnlab_vulnerable/templates/tickets/*.html
 !vulnerable-app/src/vulnlab_vulnerable/static/
 !vulnerable-app/src/vulnlab_vulnerable/static/css/
 !vulnerable-app/src/vulnlab_vulnerable/static/css/*.css

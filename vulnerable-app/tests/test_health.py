@@ -38,7 +38,18 @@ def test_health_and_m6_routes_are_registered_with_expected_methods():
         "/logout",
         "/account",
         "/static/<path:filename>",
+        "/tickets",
+        "/tickets/new",
+        "/tickets/<int(signed=True):ticket_id>",
+        "/tickets/<int(signed=True):ticket_id>/edit",
+        "/tickets/<int(signed=True):ticket_id>/delete",
+        "/tickets/<int(signed=True):ticket_id>/comments",
     }
     assert rules["/healthz"] == {"GET", "HEAD", "OPTIONS"}
     assert rules["/logout"] == {"POST", "OPTIONS"}
+    assert rules["/tickets/<int(signed=True):ticket_id>/delete"] == {"POST", "OPTIONS"}
+    assert rules["/tickets/<int(signed=True):ticket_id>/comments"] == {
+        "POST",
+        "OPTIONS",
+    }
     assert app.test_client().post("/healthz").status_code == 405
