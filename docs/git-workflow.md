@@ -1,8 +1,16 @@
 # Fonctionnement Git et GitHub
 
-État courant M9 : M1–M8 validées, six PR dépendantes non fusionnées. Le [plan exact de squash et réconciliation](baseline-consolidation-m9.md) remplace l'instruction générique de partir de main tant que celui-ci contient uniquement l'amorçage. Main exige les trois checks et le squash ; suppression automatique des branches actuellement activée, à désactiver avec autorisation avant fusion. Les états M3/M4 ci-dessous sont historiques. Aucun reciblage, merge ou tag réalisé en M9.
+État courant M9.1 : M3 a été intégré par la PR #8, main à `c0c62e7` avec arbre identique au M3 validé ; PR #1/#2 fermées. PR #9 M4 vers main réconciliée par push normal ; PR #3 dépend de `m4-local-https`. Le [plan actualisé de squash et réconciliation](baseline-consolidation-m9.md) prévoit ensuite #9, #3, #4, #5, #6 et la livraison documentaire #7. Main exige les trois checks et le squash ; suppression automatique des branches encore activée, à désactiver avec autorisation avant fusion. Les états M3/M4 ci-dessous sont historiques. M9.1 ne fusionne aucune PR, ne supprime aucune branche et ne crée aucun tag.
 
 Le dépôt cible est [Iyed523/VulnLab](https://github.com/Iyed523/VulnLab). M3-Git autorise la publication du code, des commits, une PR brouillon et les protections disponibles. Elle n’autorise aucune fusion ou publication du service.
+
+## Convention permanente de nommage des branches
+
+Pour toute nouvelle branche, utiliser un nom décrivant la mission ou le changement, **sans préfixe `codex/`** : par exemple `m10-baseline-integration`, `feat/ticket-search` ou `fix/session-expiry`. Cette préférence explicite du Product Owner remplace le préfixe par défaut de l’outil ; elle est aussi inscrite dans [AGENTS.md](../AGENTS.md).
+
+La convention s’applique uniquement aux nouvelles branches. Les branches existantes, y compris celles préfixées par `codex/`, conservent leurs noms, leur historique, leurs PR et leurs dépendances. Ne pas les renommer, supprimer ou recréer pour appliquer cette convention. Aucun changement de nommage n’autorise une fusion de PR ou une réécriture d’historique. Les noms historiques mentionnés dans ce guide restent inchangés.
+
+## Procédure d’une mission autorisée
 
 Pour chaque mission : partir de `main` synchronisée, créer une branche dédiée, effectuer des commits décrivant le travail réel, puis pousser cette branche et ouvrir une PR. Ne jamais reconstruire artificiellement un historique de missions antérieures.
 

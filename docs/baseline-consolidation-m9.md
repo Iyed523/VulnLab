@@ -2,7 +2,32 @@
 
 M1 à M8 et leurs corrections sont validées par le Product Owner. M9 part du dépôt propre, branche M8 à `b9f5a771cfc39e677601f69949268862ca262a56`. Consolidation sur `codex/m9-baseline-consolidation`, sans modification métier, versions épinglées, migration, topologie de référence ou privilège. Aucune fusion, suppression de branche ou création de tag autorisée ici. Validation Windows complétée le 3 octobre 2026 ; M9 reste soumise à revue et validation Product Owner.
 
-## Revue de la chaîne publiée
+## M9.1 — Réconciliation M4 et état courant, 3 octobre 2026
+
+Inspection réelle après `git fetch origin` : [PR #8](https://github.com/Iyed523/VulnLab/pull/8) fusionnée, main `c0c62e74df846d3bd6690855e4840255b5280b81`, arbre exactement égal au M3 validé `15284a8`. Aucun changement supplémentaire de main observé. PR #1/#2 fermées par les opérations antérieures ; M9.1 ne les ferme pas et ne réalise aucune fusion.
+
+[PR #9](https://github.com/Iyed523/VulnLab/pull/9) existante, `m4-local-https` vers main, initialement en conflit sur `aabc745`. Réparation préparée depuis le vrai main avec un index temporaire : application de **seulement** `15284a8..aabc745`, puis commit `0b3453f78d7e9b0e0696e476829aae6d6ba4aaff`. Parents, dans l'ordre : M4 publiée `aabc745d0c103513e3d556bd3965fd36131b9dee`, main `c0c62e74df846d3bd6690855e4840255b5280b81`. Tous deux sont ancêtres ; push normal en avance rapide effectué sur `m4-local-https`, sans force, reset ou remplacement de PR. Branche locale nouvelle `m9-1-m4-reconciliation`, conforme à la convention sans `codex/`.
+
+Arbre obtenu **`bde1d9ad8b98d981f45264e5e850e80e62c085e2`**, identique au M4 validé ; aucune perte et aucune différence métier à expliquer. Le diff binaire `main..réparation` et le diff à trois points `main...réparation` sont identiques au patch M4 original. Les changements locaux de convention dans AGENTS.md/git-workflow.md sont conservés dans le checkout de consolidation, absents du patch et de l'arbre M4.
+
+Contrôles locaux sur une archive isolée du commit réparé, avec sa propre installation éditable et son verrou M4 : 25 tests Pytest réussis (tests HTTP/installation et classement du témoin), Ruff/formatage scripts inclus, dépendances compatibles (19 distributions), wheel, Compose M4, actionlint et `git diff --check` réussis. Aucun test Docker sur les piles locales conservées ; la CI M4 exécute les contrôles réels sur ses propres ressources. [CI PR #9](https://github.com/Iyed523/VulnLab/actions/runs/37105453122) et [CI push](https://github.com/Iyed523/VulnLab/actions/runs/37105450251) réussies sur le SHA exact 0b3453f : Python Linux, Python Windows et Docker Linux verts. Les deux jobs Python exécutent 25 tests ; Docker confirme HTTPS, contrôle positif proxy et refus `network-unreachable` app/db/redis au témoin local. PR #9 est MERGEABLE/CLEAN, en attente de revue ; ce témoin ne prouve pas une interdiction globale des sorties.
+
+### Plan actuel des PR restantes
+
+| PR | Branche → base actuelle | Suite prévue après autorisation |
+| --- | --- | --- |
+| #9 — M4 | m4-local-https → main | Vérifier trois checks verts sur 0b3453f, diff M4 seul, puis attendre l'autorisation de squash |
+| #3 — M5 | codex/m5-data-foundation → m4-local-https | Après squash #9, réconcilier avec le vrai nouveau main en appliquant seulement aabc745..b6700c2, puis reciblage et nouveaux checks |
+| #4 — M6/M6.1 | codex/m6-auth-sessions → codex/m5-data-foundation | Après squash #3, delta b6700c2..4f1e244 sur le vrai main, réconciliation, reciblage et checks |
+| #5 — M7 | codex/m7-tickets-comments → codex/m6-auth-sessions | Après squash #4, delta 4f1e244..b12bc1a, même procédure |
+| #6 — M8 | codex/m8-profile-admin → codex/m7-tickets-comments | Après squash #5, delta b12bc1a..b9f5a77, même procédure |
+| #7 — Consolidation/documents | codex/m9-baseline-consolidation → codex/m8-profile-admin | Livraison distincte de M4 : inclut convention permanente et rapport M9.1 ; après M8, réconciliation documentaire puis reciblage/checks si intégration autorisée |
+
+Ordre restant **#9 → #3 → #4 → #5 → #6 → #7**. Les branches existantes ne sont ni renommées ni recréées. Toute nouvelle branche de préparation utilise un nom descriptif sans `codex/`. Pour chaque futur squash, relever son vrai SHA ; reconstruire uniquement le delta propre dans une branche temporaire, préserver les changements supplémentaires éventuels de main, et arrêter pour revue sur toute divergence inexpliquée. Préparer deux parents (tête publiée courante/main), vérifier avance rapide, arbre et diff, puis push normal et reciblage **uniquement lorsque cette opération est autorisée**. Les anciens SHA de simulation ne sont pas ceux des fusions réelles. Aucun simple reciblage ni merge « ours » aveugle.
+
+Le réglage GitHub relu en M9.1 reste squash seul et `delete_branch_on_merge=true`. Désactivation autorisée à prévoir avant toute nouvelle fusion ; ne supprimer aucune branche parente. PR #3 conserve sa dépendance à `m4-local-https`, aucune réparation/reciblage des autres PR effectué ici. Fusions et tag annoté baseline-functional-v1 attendent autorisation explicite et CI finale main verte. Les sections suivantes consignent la revue et le plan initiaux M9, désormais historiques.
+
+## Revue initiale de la chaîne publiée — historique M9
 
 Les six PR sont ouvertes en brouillon ; les checks Python Linux, Python Windows et Docker Linux sont tous SUCCESS, pour push et PR aux têtes ci-dessous. Chaque tête contient sa base publiée ; deltas propres examinés par `git diff BASE HEAD`, et chemins versionnés inventoriés. Pas de clés/certificats privés, `.tools`, environnements locaux ou `secrets` versionnés. `.env.example` et mots de passe de fixtures restent fictifs et explicitement pédagogiques.
 
@@ -71,7 +96,7 @@ docker @composeArgs stop --timeout 20
 
 Les scripts valident TLS avec la CA locale explicite, nom d'hôte et loopback, sans navigateur personnel, modification hosts ou magasin de confiance. Les secrets, SID et jetons restent en mémoire. Migration attendue : `0002_session_version`. Arrêt uniquement M9 ; volume/conteneurs/réseaux/image conservés pour revue, témoins temporaires supprimés par leur contrôle. Après l'arrêt, comparer les identifiants/images/états/timestamps des sept conteneurs initiaux et présence de leurs volumes/réseaux. Aucun `down --volumes`, prune ou nettoyage global local.
 
-## Plan de fusion après autorisation explicite
+## Plan initial de fusion — historique avant intégration de M3
 
 Ordre strict **#1 → #2 → #3 → #4 → #5 → #6**, squash pour chaque PR. Conserver toutes les branches parentes jusqu'à réparation de tous leurs descendants. Le squash conserve l'arbre, pas l'ascendance : un simple reciblage vers main conserve les anciens commits dans la comparaison à la base commune. Ne pas prendre ce diff cumulatif pour le seul changement de la mission.
 
