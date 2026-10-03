@@ -74,7 +74,7 @@ VulnLab/
 - [Roadmap et choix des scénarios](docs/roadmap.md)
 - [Règles des prochaines missions](AGENTS.md)
 
-La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M8 est validée sur `b9f5a77`. M9 prépare les fusions dans sa branche de consolidation dépendante de M8 ; aucune PR n'est fusionnée, aucun tag créé. La validation Windows M9 dépend du rétablissement du moteur Docker. Les futures faiblesses restent hors périmètre.
+La progression se fait par missions avec revue du Team Lead et validation du Product Owner. M8 est validée sur `b9f5a77`. M9 prépare les fusions dans sa branche de consolidation dépendante de M8 ; aucune PR n'est fusionnée, aucun tag créé. La validation Windows M9 a réussi le 3 octobre avec Docker Desktop 4.93.0, moteur Linux 29.8.1 ; la pile dédiée est arrêtée et conservée, M6.1/securevault inchangées dans les contrôles d'inventaire. M9 reste soumise à revue ; les futures faiblesses restent hors périmètre.
 
 L’accès utilisateur préparé est `https://vulnerable.vulnlab.test:8443`, publié seulement sur `127.0.0.1`, avec certificat dédié et confiance explicite. `secure.vulnlab.test` est réservé. Le [guide Docker](docs/docker.md) décrit la génération Windows/Linux, les commandes sans modification hosts, les contrôles et les limites des sorties du proxy. Docker Desktop local a fait l’objet de la validation M6.1, distincte de la CI M7. Les clés, outils, caches et environnements ne sont pas versionnés.
 

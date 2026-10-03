@@ -1,6 +1,6 @@
 # M9 — Consolidation et préparation de l'intégration
 
-M1 à M8 et leurs corrections sont validées par le Product Owner. M9 part du dépôt propre, branche M8 à `b9f5a771cfc39e677601f69949268862ca262a56`. Consolidation sur `codex/m9-baseline-consolidation`, sans modification métier, version, migration, topologie de référence ou privilège. Aucune fusion, suppression de branche ou création de tag autorisée ici.
+M1 à M8 et leurs corrections sont validées par le Product Owner. M9 part du dépôt propre, branche M8 à `b9f5a771cfc39e677601f69949268862ca262a56`. Consolidation sur `codex/m9-baseline-consolidation`, sans modification métier, versions épinglées, migration, topologie de référence ou privilège. Aucune fusion, suppression de branche ou création de tag autorisée ici. Validation Windows complétée le 3 octobre 2026 ; M9 reste soumise à revue et validation Product Owner.
 
 ## Revue de la chaîne publiée
 
@@ -25,9 +25,33 @@ L'inventaire initial du moteur Linux Docker Desktop réussit : sept conteneurs a
 
 La préparation vérifie l'absence du projet/volume M9 et le port 8443 avant toute construction. [Overlay M9](../compose.validation-m9.yaml) : image distincte `vulnlab-m9-validation-app:m8`, projet explicite `vulnlab-m9-validation`, volume propre. Certificats et clé existants à préserver sans remplacement ni affichage. Ne jamais réutiliser les volumes précédents ou exécuter les tests destructifs sur eux.
 
-Incident observé : après l'inventaire réussi, Docker renvoie HTTP 500 sur `/version` et `/containers/json`, avec API négociée 1.48 comme avec API 1.45 limitée au processus de diagnostic. La première préparation s'arrête avant création, build ou démarrage M9. Le parcours HTTPS Windows et l'infrastructure M8 n'ont donc pas été exécutés en M9 ; ce critère reste à confirmer après rétablissement du moteur. Aucun redémarrage global ou opération sur les autres piles. Aucune ressource M9 créée à conserver/arrêter. L'état final des sept conteneurs précédents ne peut pas être relu pendant cet incident ; seule l'absence d'opération de notre part et leur inventaire initial sont établis, sans prétendre vérifier un état externe devenu inaccessible.
+Incident historique du 2 octobre : après l'inventaire réussi, Docker renvoyait HTTP 500 sur `/version` et `/containers/json`, avec API négociée 1.48 comme avec API 1.45 limitée au processus de diagnostic. La première préparation s'était arrêtée avant toute création M9 ; aucune réussite Windows n'avait été revendiquée. Le Product Owner a signalé le rétablissement du moteur le 3 octobre et autorisé la reprise au point d'arrêt. La revue Git et la simulation déjà terminées n'ont pas été refaites.
 
-Procédure préparée depuis la racine (Python local, environnement limité au processus) :
+### Reprise et preuves Windows réelles — 3 octobre 2026
+
+Depuis la racine, l'endpoint explicite `npipe:////./pipe/dockerDesktopLinuxEngine` confirme **Docker Desktop 4.93.0 (240920), moteur Linux 29.8.1, API serveur 1.56**, architecture amd64. Il s'agit des nouvelles versions de l'environnement hôte ; aucune version épinglée du dépôt n'est changée. Le projet/volume M9 était absent, 8443 libre, et les sept conteneurs protégés arrêtés code 0. Les métadonnées des clés/certificat ont été conservées sans lire ni afficher leur contenu.
+
+Construction de l'image M9 réussie, dépendances verrouillées et wheel installée dans l'image ; quatre services healthy. `data-tools upgrade`, `check`, `seed` exécutés explicitement. Alembic ne détecte aucune nouvelle opération ; une requête SQL confirme `0002_session_version` et cinq comptes fictifs après les parcours HTTPS. Aucun test destructif d'intégration sur ce volume local conservé.
+
+Parcours `verify_auth_https.py` réellement exécuté depuis Windows avec CA explicite, vérification du nom TLS et loopback : inscription, connexion/déconnexion, cookies Secure/HttpOnly/Lax sans Domain, rotation/rejeux, CSRF, redirection externe et quotas ; tickets/commentaires avec deux utilisateurs, accès croisés refusés, échappement HTML et suppression ; profil limité au nom affiché, champs sensibles refusés, accès admin réservé et activation/désactivation. L'ancien SID conservé est rejeté après réactivation **avant toute requête pendant l'inactivité**. Aucun cookie, jeton, mot de passe ou corps privé affiché dans les preuves.
+
+`verify_docker.py` réussit : HTTPS/Host/SNI et refus HTTP clair, publication uniquement `127.0.0.1:8443`, réseaux internes frontend/backend, processus non root sans capacités effectives, no-new-privileges, racines en lecture seule et écritures temporaires limitées, rôle SQL applicatif non administrateur et communications internes. Clés lisibles par les processus, ouverture réelle en append refusée sans écriture/troncature. Contrôle des ACE NTFS trop larges réussi ; mode apparent 777 des bind mounts Windows **sans équivalence à une preuve POSIX 0640 ni audit complet des appartenances ACL**. Témoin local : contrôle positif depuis proxy réussi ; socket disponible puis `network-unreachable` pour app/db/redis. Aucun tiers sondé ; témoins et sondes temporaires retirés.
+
+Arrêt ciblé M9 effectué après les tests ; quatre conteneurs arrêtés code 0, aucune suppression de volume. Inventaire conservé :
+
+| Ressource | Identifiant ou nom |
+| --- | --- |
+| Proxy | `8e21f4240994` — vulnlab-m9-validation-proxy-1 |
+| App | `766ad38e23a5` — vulnlab-m9-validation-app-1 |
+| PostgreSQL | `cb39cdc31cfe` — vulnlab-m9-validation-db-1 |
+| Redis | `eb53600dfcbd` — vulnlab-m9-validation-redis-1 |
+| Image app/data-tools | `vulnlab-m9-validation-app:m8`, SHA `2d652c732acd6deb56d18ad70bc676c01741e8a543214fb0075d04def41643a4` |
+| Volume | `vulnlab-m9-validation_pgdata`, créé le 3 octobre à 08:51:09 (Europe/Paris) |
+| Réseaux | `vulnlab-m9-validation_ingress`, `_frontend`, `_backend` |
+
+Les sept conteneurs M6.1/securevault ont exactement les mêmes identifiants, images, états, codes de sortie et timestamps de démarrage/arrêt qu'à la reprise. Leurs deux volumes et quatre réseaux restent présents ; aucune opération de démarrage/montage/migration sur ces piles. Tailles et dates de modification des clés/certificat inchangées. Aucune preuve byte à byte des volumes indépendants revendiquée. Aucun nettoyage global. Ces ressources M9 conservées ne sont plus une base fraîche à réutiliser pour une suite destructive.
+
+Procédure exécutée depuis la racine (Python local, environnement limité au processus) :
 
 ```powershell
 $dockerArgs = @('--config', '.tools/docker-config', '-H', 'npipe:////./pipe/dockerDesktopLinuxEngine')
@@ -82,6 +106,6 @@ Ne créer `baseline-functional-v1` qu'après autorisation des fusions, chaîne i
 
 ## Contrôles et limites
 
-82 tests Python locaux réussis sans régression. La CI de consolidation doit réellement exécuter les 236 tests PostgreSQL/Redis sur ses seules ressources dédiées, HTTPS et infrastructure. Ruff/formatage incluent le script de simulation. Dépendances, wheel, Compose, actionlint, liens documentaires et diff check sont vérifiés avant livraison ; résultats CI/tête finale dans la PR M9 dépendante de #6.
+82 tests Python locaux réussis sans régression, répétés lors de la reprise du 3 octobre ; Ruff/formatage passent, scripts inclus. Les contrôles de dépendances, wheel, Compose, actionlint, liens et diff check de la consolidation restent conservés ; les modifications de reprise sont documentaires. La [CI initiale M9 sur 1001a98](https://github.com/Iyed523/VulnLab/actions/runs/37018779984) a réellement réussi les trois jobs, 82 tests Python Windows/Linux et 236 tests PostgreSQL/Redis, HTTPS et infrastructure sur ressources dédiées avec nettoyage. Ces résultats CI sont distincts des preuves Windows ci-dessus ; aucun 236-tests destructif sur le volume M9 conservé. La CI de la nouvelle tête documentaire est vérifiée avant remise dans la [PR #7](https://github.com/Iyed523/VulnLab/pull/7), sans nouvelle PR.
 
 Sorties possibles du proxy et isolation du navigateur restent des limites. Le témoin local ne prouve pas un filtrage global. Pas d'audit exhaustif des secrets/historique ou byte à byte des volumes externes ; les chemins versionnés et deltas examinés ne contiennent aucun secret réel identifié. Arrêt M9 pour revue ; aucune mission suivante.
