@@ -1,6 +1,6 @@
 # M9 — Consolidation et préparation de l'intégration
 
-M1 à M8 et leurs corrections sont validées par le Product Owner. M9 part du dépôt propre, branche M8 à `b9f5a771cfc39e677601f69949268862ca262a56`. Consolidation sur `codex/m9-baseline-consolidation`, sans modification métier, versions épinglées, migration, topologie de référence ou privilège. Aucune fusion, suppression de branche ou création de tag autorisée ici. Validation Windows complétée le 3 octobre 2026 ; M9 reste soumise à revue et validation Product Owner.
+M1 à M8 et leurs corrections sont validées par le Product Owner. M9 part du dépôt propre, branche M8 à `b9f5a771cfc39e677601f69949268862ca262a56`. Consolidation sur `m9-baseline-consolidation` (ancien nom `codex/m9-baseline-consolidation`), sans modification métier, versions épinglées, migration, topologie de référence ou privilège. Aucune fusion, suppression de branche ou création de tag autorisée ici. Validation Windows complétée le 3 octobre 2026 ; M9 reste soumise à revue et validation Product Owner.
 
 ## M9.1 — Réconciliation M4 et état courant, 3 octobre 2026
 
@@ -17,17 +17,19 @@ Contrôles locaux sur une archive isolée du commit réparé, avec sa propre ins
 | PR | Branche → base actuelle | Suite prévue après autorisation |
 | --- | --- | --- |
 | #9 — M4 | m4-local-https → main | Vérifier trois checks verts sur 0b3453f, diff M4 seul, puis attendre l'autorisation de squash |
-| #3 — M5 | codex/m5-data-foundation → m4-local-https | Après squash #9, réconcilier avec le vrai nouveau main en appliquant seulement aabc745..b6700c2, puis reciblage et nouveaux checks |
-| #4 — M6/M6.1 | codex/m6-auth-sessions → codex/m5-data-foundation | Après squash #3, delta b6700c2..4f1e244 sur le vrai main, réconciliation, reciblage et checks |
-| #5 — M7 | codex/m7-tickets-comments → codex/m6-auth-sessions | Après squash #4, delta 4f1e244..b12bc1a, même procédure |
-| #6 — M8 | codex/m8-profile-admin → codex/m7-tickets-comments | Après squash #5, delta b12bc1a..b9f5a77, même procédure |
-| #7 — Consolidation/documents | codex/m9-baseline-consolidation → codex/m8-profile-admin | Livraison distincte de M4 : inclut convention permanente et rapport M9.1 ; après M8, réconciliation documentaire puis reciblage/checks si intégration autorisée |
+| #10 — M5 | m5-data-foundation → m4-local-https | Après squash #9, réconcilier avec le vrai nouveau main en appliquant seulement aabc745..b6700c2, puis reciblage et nouveaux checks |
+| #11 — M6/M6.1 | m6-auth-sessions → m5-data-foundation | Après squash #10, delta b6700c2..4f1e244 sur le vrai main, réconciliation, reciblage et checks |
+| #12 — M7 | m7-tickets-comments → m6-auth-sessions | Après squash #11, delta 4f1e244..b12bc1a, même procédure |
+| #13 — M8 | m8-profile-admin → m7-tickets-comments | Après squash #12, delta b12bc1a..b9f5a77, même procédure |
+| #14 — Consolidation/documents | m9-baseline-consolidation → m8-profile-admin | Livraison distincte de M4 : inclut convention permanente et rapport M9.1 ; après M8, réconciliation documentaire puis reciblage/checks si intégration autorisée |
 
-Ordre restant **#9 → #3 → #4 → #5 → #6 → #7**. Les branches existantes ne sont ni renommées ni recréées. Toute nouvelle branche de préparation utilise un nom descriptif sans `codex/`. Pour chaque futur squash, relever son vrai SHA ; reconstruire uniquement le delta propre dans une branche temporaire, préserver les changements supplémentaires éventuels de main, et arrêter pour revue sur toute divergence inexpliquée. Préparer deux parents (tête publiée courante/main), vérifier avance rapide, arbre et diff, puis push normal et reciblage **uniquement lorsque cette opération est autorisée**. Les anciens SHA de simulation ne sont pas ceux des fusions réelles. Aucun simple reciblage ni merge « ours » aveugle.
+Ordre restant **#9 → #10 → #11 → #12 → #13 → #14**. Les branches existantes ont été renommées dans la mission dédiée ; les PR #10 à #14 remplacent #3 à #7. Aucun nom de branche ne doit contenir `codex`, quelle que soit la casse. Voir le [rapport de renommage](branch-renaming.md). Pour chaque futur squash, relever son vrai SHA ; reconstruire uniquement le delta propre dans une branche temporaire, préserver les changements supplémentaires éventuels de main, et arrêter pour revue sur toute divergence inexpliquée. Préparer deux parents (tête publiée courante/main), vérifier avance rapide, arbre et diff, puis push normal et reciblage **uniquement lorsque cette opération est autorisée**. Les anciens SHA de simulation ne sont pas ceux des fusions réelles. Aucun simple reciblage ni merge « ours » aveugle.
 
-Le réglage GitHub relu en M9.1 reste squash seul et `delete_branch_on_merge=true`. Désactivation autorisée à prévoir avant toute nouvelle fusion ; ne supprimer aucune branche parente. PR #3 conserve sa dépendance à `m4-local-https`, aucune réparation/reciblage des autres PR effectué ici. Fusions et tag annoté baseline-functional-v1 attendent autorisation explicite et CI finale main verte. Les sections suivantes consignent la revue et le plan initiaux M9, désormais historiques.
+Le réglage GitHub relu en M9.1 reste squash seul et `delete_branch_on_merge=true`. Désactivation autorisée à prévoir avant toute nouvelle fusion ; ne supprimer aucune branche parente. PR #10 conserve sa dépendance à `m4-local-https`, aucune réconciliation de commits des PR suivantes effectuée ; leurs bases ont seulement suivi le renommage. Fusions et tag annoté baseline-functional-v1 attendent autorisation explicite et CI finale main verte. Les sections suivantes consignent la revue et le plan initiaux M9, désormais historiques.
 
 ## Revue initiale de la chaîne publiée — historique M9
+
+Les noms préfixés ci-dessous sont les anciens noms, conservés pour retracer les preuves antérieures au renommage.
 
 Les six PR sont ouvertes en brouillon ; les checks Python Linux, Python Windows et Docker Linux sont tous SUCCESS, pour push et PR aux têtes ci-dessous. Chaque tête contient sa base publiée ; deltas propres examinés par `git diff BASE HEAD`, et chemins versionnés inventoriés. Pas de clés/certificats privés, `.tools`, environnements locaux ou `secrets` versionnés. `.env.example` et mots de passe de fixtures restent fictifs et explicitement pédagogiques.
 
@@ -131,6 +133,6 @@ Ne créer `baseline-functional-v1` qu'après autorisation des fusions, chaîne i
 
 ## Contrôles et limites
 
-82 tests Python locaux réussis sans régression, répétés lors de la reprise du 3 octobre ; Ruff/formatage passent, scripts inclus. Les contrôles de dépendances, wheel, Compose, actionlint, liens et diff check de la consolidation restent conservés ; les modifications de reprise sont documentaires. La [CI initiale M9 sur 1001a98](https://github.com/Iyed523/VulnLab/actions/runs/37018779984) a réellement réussi les trois jobs, 82 tests Python Windows/Linux et 236 tests PostgreSQL/Redis, HTTPS et infrastructure sur ressources dédiées avec nettoyage. Ces résultats CI sont distincts des preuves Windows ci-dessus ; aucun 236-tests destructif sur le volume M9 conservé. La CI de la nouvelle tête documentaire est vérifiée avant remise dans la [PR #7](https://github.com/Iyed523/VulnLab/pull/7), sans nouvelle PR.
+82 tests Python locaux réussis sans régression, répétés lors de la reprise du 3 octobre ; Ruff/formatage passent, scripts inclus. Les contrôles de dépendances, wheel, Compose, actionlint, liens et diff check de la consolidation restent conservés ; les modifications de reprise sont documentaires. La [CI initiale M9 sur 1001a98](https://github.com/Iyed523/VulnLab/actions/runs/37018779984) a réellement réussi les trois jobs, 82 tests Python Windows/Linux et 236 tests PostgreSQL/Redis, HTTPS et infrastructure sur ressources dédiées avec nettoyage. Ces résultats CI sont distincts des preuves Windows ci-dessus ; aucun 236-tests destructif sur le volume M9 conservé. La CI de la nouvelle tête documentaire est vérifiée avant remise dans la [PR #14](https://github.com/Iyed523/VulnLab/pull/14), remplaçante documentaire de l’ancienne PR #7.
 
 Sorties possibles du proxy et isolation du navigateur restent des limites. Le témoin local ne prouve pas un filtrage global. Pas d'audit exhaustif des secrets/historique ou byte à byte des volumes externes ; les chemins versionnés et deltas examinés ne contiennent aucun secret réel identifié. Arrêt M9 pour revue ; aucune mission suivante.

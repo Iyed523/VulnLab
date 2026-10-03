@@ -1,14 +1,14 @@
 # Fonctionnement Git et GitHub
 
-État courant M9.1 : M3 a été intégré par la PR #8, main à `c0c62e7` avec arbre identique au M3 validé ; PR #1/#2 fermées. PR #9 M4 vers main réconciliée par push normal ; PR #3 dépend de `m4-local-https`. Le [plan actualisé de squash et réconciliation](baseline-consolidation-m9.md) prévoit ensuite #9, #3, #4, #5, #6 et la livraison documentaire #7. Main exige les trois checks et le squash ; suppression automatique des branches encore activée, à désactiver avec autorisation avant fusion. Les états M3/M4 ci-dessous sont historiques. M9.1 ne fusionne aucune PR, ne supprime aucune branche et ne crée aucun tag.
+État courant M9.1 : M3 a été intégré par la PR #8, main à `c0c62e7` avec arbre identique au M3 validé ; PR #1/#2 fermées. PR #9 M4 vers main réconciliée par push normal ; PR #10 (ancienne #3) dépend de `m4-local-https`. Le [plan actualisé de squash et réconciliation](baseline-consolidation-m9.md) prévoit ensuite #9, #10, #11, #12, #13 et la livraison documentaire #14. Main exige les trois checks et le squash ; suppression automatique des branches encore activée, à désactiver avec autorisation avant fusion. Les états M3/M4 ci-dessous sont historiques. M9.1 ne fusionne aucune PR, ne supprime aucune branche et ne crée aucun tag.
 
 Le dépôt cible est [Iyed523/VulnLab](https://github.com/Iyed523/VulnLab). M3-Git autorise la publication du code, des commits, une PR brouillon et les protections disponibles. Elle n’autorise aucune fusion ou publication du service.
 
 ## Convention permanente de nommage des branches
 
-Pour toute nouvelle branche, utiliser un nom décrivant la mission ou le changement, **sans préfixe `codex/`** : par exemple `m10-baseline-integration`, `feat/ticket-search` ou `fix/session-expiry`. Cette préférence explicite du Product Owner remplace le préfixe par défaut de l’outil ; elle est aussi inscrite dans [AGENTS.md](../AGENTS.md).
+Aucun nom de branche locale ou distante ne doit contenir **`codex`, quelle que soit la casse**. Utiliser des noms descriptifs : `m10-baseline-integration`, `feat/ticket-search` ou `fix/session-expiry`. Cette instruction explicite du Product Owner remplace le préfixe par défaut de l’outil et la règle précédente limitée aux nouvelles branches ; elle figure aussi dans [AGENTS.md](../AGENTS.md).
 
-La convention s’applique uniquement aux nouvelles branches. Les branches existantes, y compris celles préfixées par `codex/`, conservent leurs noms, leur historique, leurs PR et leurs dépendances. Ne pas les renommer, supprimer ou recréer pour appliquer cette convention. Aucun changement de nommage n’autorise une fusion de PR ou une réécriture d’historique. Les noms historiques mentionnés dans ce guide restent inchangés.
+La mission dédiée autorise le renommage des branches existantes : inventaire et collisions avant mutation, SHA et arbres inchangés, upstreams et dépendances vérifiés, anciennes références retirées seulement après préservation du travail. Aucun push forcé, réécriture de commits ou fusion. GitHub ferme les PR dont la source est renommée et recible leurs dépendantes : vérifier le résultat réel, remplacer si nécessaire en conservant description, brouillon et traçabilité. Voir le [rapport des renommages](branch-renaming.md). Les anciens noms restent uniquement des références historiques identifiées.
 
 ## Procédure d’une mission autorisée
 
@@ -57,4 +57,4 @@ Réglages appliqués et relus via API : squash seul autorisé, auto-merge désac
 
 ## Dépendance M4
 
-Le cadrage M4 valide M1 à M3-Git. La branche codex/m4-local-https part de chore/bootstrap-lab à 15284a8, car main ne contient encore que l’amorçage. La [PR #2](https://github.com/Iyed523/VulnLab/pull/2) reste en brouillon vers chore/bootstrap-lab et devra être reciblée vers main après fusion explicitement autorisée du socle. Aucune fusion de #1 ou #2 n’est effectuée. M4 est soumise à revue ; M5 n’est pas commencée.
+Le cadrage M4 valide M1 à M3-Git. La branche `codex/m4-local-https` (ancien nom) part de chore/bootstrap-lab à 15284a8, car main ne contient encore que l’amorçage. La [PR #2](https://github.com/Iyed523/VulnLab/pull/2) reste en brouillon vers chore/bootstrap-lab et devra être reciblée vers main après fusion explicitement autorisée du socle. Aucune fusion de #1 ou #2 n’est effectuée. M4 est soumise à revue ; M5 n’est pas commencée.
