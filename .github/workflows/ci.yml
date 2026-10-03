@@ -1,0 +1,72 @@
+name: VulnLab checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Python ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: Linux
+          - os: windows-latest
+            platform: Windows
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: vulnerable-app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: false
+      - name: Install CPython
+        run: uv python install 3.13.15
+      - name: Synchronize locked dependencies
+        run: uv sync --locked --group build --python 3.13.15
+      - name: Check installed dependencies
+        run: uv pip check
+      - name: Lint
+        run: uv run --locked ruff check .
+      - name: Check formatting
+        run: uv run --locked ruff format --check .
+      - name: Check installation
+        run: uv run --locked pytest
+      - name: Build wheel
+        run: uv run --locked --group build -- uv build --wheel --no-build-isolation
+
+  docker:
+    name: Docker Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate Compose
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml config --quiet
+      - name: Build application image
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml build app
+      - name: Start dedicated stack
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml up -d --wait --wait-timeout 120
+      - name: Verify local infrastructure
+        run: python3 scripts/ci/verify_docker.py
+      - name: Preserve failure diagnostics in job logs
+        if: failure()
+        run: |
+          docker compose --env-file .env.example -f compose.vulnerable.yaml ps -a
+          docker compose --env-file .env.example -f compose.vulnerable.yaml logs --no-color --tail 100
+      - name: Clean up this job's stack and volume
+        if: always()
+        run: docker compose --env-file .env.example -f compose.vulnerable.yaml down --volumes --timeout 20
