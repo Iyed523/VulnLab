@@ -208,6 +208,18 @@ def main():
         assert info["State"]["Health"]["Status"] == "healthy", service
         assert info["State"]["Running"], service
         host = info["HostConfig"]
+        if service == "app":
+            environment = dict(value.split("=", 1) for value in info["Config"]["Env"])
+            assert environment.get("DB_USER") == "vulnlab_app"
+            assert not any(
+                key in environment
+                for key in (
+                    "MIGRATION_DB_PASSWORD",
+                    "POSTGRES_PASSWORD",
+                    "APP_DB_PASSWORD",
+                )
+            ), "Maintenance credentials in application environment"
+            assert "vulnlab_migrate" not in environment.values()
         assert not host["Privileged"], service
         assert host["ReadonlyRootfs"], service
         assert "no-new-privileges" in " ".join(host["SecurityOpt"]), service

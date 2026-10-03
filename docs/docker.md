@@ -1,5 +1,7 @@
 # Docker et HTTPS local — M4 soumise à revue
 
+M4/M4.1 sont désormais validées par le Product Owner sur `aabc745`, avec Docker Desktop local non vérifié et sorties possibles du proxy. M5 conserve les protections ci-dessous et ajoute la configuration SQL applicative, le rôle de migration et l'outil ponctuel `data-tools` : voir [données, migrations et volumes existants](data-foundation.md). Le fichier `compose.ci.yaml` est réservé aux tests destructifs sur la base éphémère CI, jamais à un volume local existant.
+
 M1, M2, M3 et M3-Git sont validées selon le cadrage reçu. M4 part de `chore/bootstrap-lab` au commit `15284a8`, pas du main minimal. La PR #1 demeure ouverte en brouillon ; aucune fusion n’est effectuée. `secure-app` reste documentaire.
 
 ## État et images

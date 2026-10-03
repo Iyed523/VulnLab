@@ -13,6 +13,16 @@ RUN uv venv --python /usr/local/bin/python /opt/runtime \
     && uv pip install --python /opt/runtime/bin/python --no-deps dist/*.whl \
     && uv pip check --python /opt/runtime/bin/python
 
+FROM build AS integration
+RUN uv sync --locked --group build
+COPY vulnerable-app/tests ./tests
+COPY vulnerable-app/integration ./integration
+COPY vulnerable-app/migrations ./migrations
+COPY vulnerable-app/alembic.ini ./alembic.ini
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+USER 10001:10001
+CMD ["/build/.venv/bin/python", "-m", "pytest", "-p", "no:cacheprovider", "integration", "-v"]
+
 FROM python:3.13.15-slim-bookworm@sha256:2325bb286ec344af3e5898cc224b5844e2707ac6e26b1632516fd3edc84a5e26 AS runtime
 RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app
 COPY --from=build /opt/runtime /opt/runtime

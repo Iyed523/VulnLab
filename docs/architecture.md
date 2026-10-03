@@ -4,6 +4,8 @@ M1, M2, M3 et M3-Git sont validées selon le cadrage M4. M3 ajoute une fabrique 
 
 ## Composants et responsabilités
 
+M5 réalise le socle de persistance de la seule application de référence : configuration SQL sans connexion à l'import, modèles users/tickets/comments, migrations et fixtures explicites. Aucune route métier ou autorisation n'est encore réalisée ; les composants fonctionnels ci-dessous restent prévus. Voir le [guide M5](data-foundation.md) et l'[ADR 0005](decisions/0005-data-foundation.md).
+
 Chaque version est un monolithe modulaire Flask, avec rendu serveur Jinja et ressources HTML/CSS locales, sans frontend séparé. Nginx est configuré en M4 pour terminer le HTTPS local et transmettra les requêtes à Gunicorn, qui exécutera Flask. PostgreSQL conservera les données métier ; SQLAlchemy assurera leur mapping, psycopg la connexion et Alembic les migrations.
 
 Flask-Login gérera l’identité connectée, Flask-Session les sessions côté serveur dans Redis, Flask-WTF les formulaires et la protection CSRF, Argon2id le hachage des mots de passe. Flask-Limiter utilisera les compteurs Redis. Les autorisations métier resteront des contrôles serveur explicites.
