@@ -1,13 +1,15 @@
 # VULN-002 — XSS stocké dans les commentaires, prévu mais non introduit
 
-**État M12.1 : navigateur vérifié sur loopback, sans connexion au laboratoire.**
+**État M12.2 : sandbox, HTTPS et parcours fictif vérifiés dans la pile dédiée.**
 Le blocage sandbox historique M12 est résolu ; aucun XSS
 n'est présent dans cette livraison. Le contenu des commentaires reste échappé
 comme à M11 et au tag `baseline-functional-v1`. Aucun effet DOM, persistance
 d'exécution, sévérité constatée ou capture navigateur ne peut être revendiqué.
 Voir le [rapport M12.1 et ses limites](../m12-1-browser-sandbox.md) et le
-[diagnostic historique M12](../m12-browser-preparation.md). TLS navigateur et
-introduction du XSS restent ultérieurs après revue.
+[diagnostic historique M12](../m12-browser-preparation.md), puis le
+[rapport HTTPS M12.2](../m12-2-browser-lab-tls.md). Les deux chemins TLS,
+restrictions et parcours propre sont vérifiés ; l'introduction du XSS reste
+ultérieure et nécessite la revue et l'autorisation du Product Owner.
 
 ## Périmètre pédagogique prévu, conditionnel
 
@@ -49,3 +51,7 @@ La [preuve de prérequis bloqué](../proofs/M12-browser-preflight.json) n'est pa
 preuve XSS. Aucun navigateur personnel, tiers, collecte ou exfiltration utilisé.
 M12.1 conserve les 36 tests unitaires et en ajoute 13 ; sandbox et témoins réseau
 réels sont vérifiés séparément par la porte CI, sans charge pédagogique.
+
+M12.2 ajoute 46 tests unitaires, soit 177 tests Python (20 fonctionnels,
+157 protections). La [preuve nettoyée HTTPS](../proofs/M12-2-browser-lab-tls.json)
+porte exclusivement sur les prérequis ; `xss_allowed=false` reste obligatoire.

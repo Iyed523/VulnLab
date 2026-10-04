@@ -1,0 +1,69 @@
+# Overlay on compose.vulnerable.yaml, exclusively disposable M12.2 resources.
+name: vulnlab-m12-2-browser-lab
+services:
+  proxy:
+    ports: !reset []
+    volumes: !override
+      - ./docker/vulnerable/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${M122_DIR:-./certs/local/m122}/proxy:/etc/nginx/tls:ro
+    networks: !override
+      ingress: {}
+      frontend: {}
+      browser-test:
+        aliases: [vulnerable.vulnlab.test]
+  app:
+    volumes: !override
+      - ${M122_DIR:-./certs/local/m122}/session-key:/run/vulnlab/session-key:ro
+  browser-lab:
+    image: vulnlab-m12-2-browser:1.63.0
+    build:
+      context: ./docker/browser
+      dockerfile: Dockerfile.lab
+    init: true
+    user: pwuser
+    networks: [browser-test]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=./docker/browser/seccomp-chroot.json
+    shm_size: 256m
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 256
+    restart: "no"
+    tmpfs: ["/tmp:rw,nosuid,size=256m,mode=1777"]
+    volumes:
+      - ${M122_DIR:-./certs/local/m122}/public:/run/trust:ro
+    environment:
+      APP_PROBE_IP: ${APP_PROBE_IP:-}
+      DB_PROBE_IP: ${DB_PROBE_IP:-}
+      REDIS_PROBE_IP: ${REDIS_PROBE_IP:-}
+    depends_on:
+      proxy: {condition: service_healthy}
+      tls-witness: {condition: service_healthy}
+  tls-witness:
+    image: vulnlab-m12-2-browser:1.63.0
+    user: pwuser
+    group_add: ["${TLS_KEY_GID:-1000}"]
+    init: true
+    entrypoint: [python, /opt/browser/tls_witness.py]
+    networks:
+      browser-test:
+        aliases: [good.vulnlab.test, forbidden.vulnlab.test, untrusted.vulnlab.test, wrong.vulnlab.test, correct.vulnlab.test]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 64
+    tmpfs: ["/tmp:rw,nosuid,size=16m,mode=1777"]
+    volumes:
+      - ${M122_DIR:-./certs/local/m122}/witness:/run/witness:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:8446/stats',timeout=3).status == 200"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+networks:
+  browser-test: {internal: true}
