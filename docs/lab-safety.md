@@ -33,11 +33,30 @@ M12 livrait [un prérequis bloqué](m12-browser-preparation.md).
 témoins HTTP/redirection/WebSocket locaux, dans un conteneur réseau none,
 non-root sans capacités ajoutées. Une règle seccomp chroot est adaptée ; les
 contrôles noyau restent actifs. La porte obligatoire échoue sur tout prérequis
-M12.1 manquant. **Aucun XSS ni connexion au laboratoire** : le TLS navigateur
-reste non vérifié et nécessite une étape ultérieure après revue. Un filtre de
-requêtes n'est pas une preuve de filtrage global de tous les flux du navigateur.
+M12.1 manquant. Cette preuve historique ne couvre pas TLS.
 
-L’isolation du serveur ne garantit pas celle du navigateur. Celui-ci s’exécute sur le poste hôte et peut avoir accès à d’autres sites ou ressources que les conteneurs. Des hôtes distincts ne suffisent pas à garantir toute l’isolation du navigateur.
+[M12.2](m12-2-browser-lab-tls.md) vérifie maintenant la connexion HTTPS dans une
+pile jetable distincte : navigateur non-root sans capacités, racine read-only,
+tmpfs, no-new-privileges et même seccomp. Sandbox Namespace/PID/réseau et
+seccomp-BPF/TSYNC vérifiés avant et après le parcours fictif. Seuls les
+certificats publics sont montés ; NSS et confiance Node restent éphémères,
+sans changement Windows ni contournement TLS. Autorité inconnue et mauvais
+nom sont refusés séparément par Chromium et route.fetch, avec positifs locaux.
+Le navigateur n'est attaché qu'au réseau browser-test interne ; ses sondes
+TCP vers app/PostgreSQL/Redis échouent après positifs depuis l'app. Les
+témoins interdits joignables sans filtre ne reçoivent aucun nouvel appel après
+médiation ; redirections, WebSocket, téléchargement et service workers sont
+contrôlés réellement. Aucun port de cette pile n'est publié.
+
+**Aucun XSS introduit ou exécuté.** Ce filtre de requêtes n'est pas une preuve
+de filtrage global des protocoles natifs, et le proxy conserve ingress avec
+des sorties possibles. Les piles securevault/M6.1/M9 restent conservées.
+La preuve exclut cookies, CSRF, identifiants, profils et clés ; le nettoyage
+cible seulement les ressources créées par la porte. Le rapport consigne aussi
+l'écart de capacité de la consultation APT initiale ; il ne fait pas partie
+de la solution livrée et ne doit pas être présenté comme conforme.
+
+L’isolation du serveur ne garantit pas celle d'un navigateur personnel sur le poste hôte. M12.2 utilise exclusivement le navigateur dédié dans son conteneur ; ses preuves ne couvrent pas les navigateurs personnels. Des hôtes distincts ne suffisent pas à garantir toute l’isolation du navigateur.
 
 Les démonstrations XSS resteront locales, sans collecte ni transmission de données. Prévoir un profil de navigateur dédié sans comptes réels ni sessions personnelles, des données fictives et des preuves visuelles inoffensives. Aucun mécanisme d’exfiltration ni destination tierce ne fait partie des preuves autorisées.
 

@@ -1,6 +1,7 @@
 """Preparation-only checks: no browser execution and no XSS payload."""
 
 import asyncio
+import errno
 import importlib.util
 import json
 from pathlib import Path
@@ -90,8 +91,22 @@ class Response:
 
 class Route:
     def __init__(self, url, responses, method="GET", body=None):
+        async def all_headers(_request):
+            return {
+                "cookie": "fictitious-old-session",
+                "content-type": "application/x-www-form-urlencoded",
+                "content-length": str(len(body or b"")),
+            }
+
         self.request = type(
-            "Request", (), {"url": url, "method": method, "post_data_buffer": body}
+            "Request",
+            (),
+            {
+                "url": url,
+                "method": method,
+                "post_data_buffer": body,
+                "all_headers": all_headers,
+            },
         )()
         self.responses = iter(responses)
         self.calls = []
@@ -152,8 +167,12 @@ def test_authorized_redirect_method_and_body_semantics(status):
     )
     run_route(route)
     assert route.fulfilled and not route.aborted
-    expected = ("POST", b"fictitious=local") if status in {307, 308} else ("GET", None)
+    expected = ("POST", b"fictitious=local") if status in {307, 308} else ("GET", b"")
     assert (route.calls[1]["method"], route.calls[1]["post_data"]) == expected
+    assert all("cookie" not in call["headers"] for call in route.calls)
+    if status not in {307, 308}:
+        assert "content-length" not in route.calls[1]["headers"]
+        assert "content-type" not in route.calls[1]["headers"]
 
 
 def test_redirect_loop_fails_closed():
@@ -163,6 +182,19 @@ def test_redirect_loop_fails_closed():
     )
     run_route(route)
     assert route.aborted and not route.fulfilled and len(route.calls) == 10
+
+
+@pytest.mark.parametrize("method", ["GET", "HEAD"])
+def test_303_preserves_get_or_head_and_explicitly_empty_body(method):
+    route = Route(
+        "https://vulnerable.vulnlab.test:8443/first",
+        [Response(303, "/second"), Response(200)],
+        method,
+    )
+    run_route(route)
+    assert route.calls[1]["method"] == method
+    assert route.calls[1]["post_data"] == b""
+    assert "cookie" not in route.calls[1]["headers"]
 
 
 def test_redirect_without_location_fails_closed():
@@ -267,3 +299,182 @@ def test_websocket_policy_closes_without_connecting_to_server():
     socket = Socket()
     asyncio.run(context.websocket_callback(socket))
     assert socket.closed
+
+
+tls_spec = importlib.util.spec_from_file_location(
+    "tls_result", Path(__file__).parents[2] / "docker/browser/tls_result.py"
+)
+tls = importlib.util.module_from_spec(tls_spec)
+tls_spec.loader.exec_module(tls)
+
+
+@pytest.mark.parametrize(
+    ("engine", "message", "expected"),
+    [
+        ("chromium", "net::ERR_CERT_AUTHORITY_INVALID", "authority"),
+        ("chromium", "net::ERR_CERT_COMMON_NAME_INVALID", "name"),
+        ("mediator", "self-signed certificate in certificate chain", "authority"),
+        ("mediator", "unable to verify the first certificate", "authority"),
+        ("mediator", "unable to get local issuer certificate", "authority"),
+        ("mediator", "Hostname/IP does not match certificate's altnames", "name"),
+    ],
+)
+def test_tls_failure_requires_explicit_engine_and_cause(engine, message, expected):
+    assert tls.tls_failure(message, engine) == expected
+
+
+@pytest.mark.parametrize("engine", ["chromium", "mediator"])
+@pytest.mark.parametrize(
+    "message",
+    [
+        "ENOTFOUND",
+        "net::ERR_NAME_NOT_RESOLVED",
+        "timeout",
+        "SyntaxError",
+        "tool missing",
+        "HTTP 421",
+        "TLS handshake closed",
+    ],
+)
+def test_dns_timeout_execution_http_and_sni_are_not_certificate_evidence(
+    engine, message
+):
+    with pytest.raises(RuntimeError, match="prerequisite unverified"):
+        tls.tls_failure(message, engine)
+
+
+def test_tls_ambiguity_fails_closed():
+    with pytest.raises(RuntimeError, match="prerequisite unverified"):
+        tls.tls_failure(
+            "net::ERR_CERT_AUTHORITY_INVALID net::ERR_CERT_COMMON_NAME_INVALID",
+            "chromium",
+        )
+
+
+def test_mediator_does_not_override_context_tls_settings():
+    route = Route("https://vulnerable.vulnlab.test:8443/a", [Response(200)])
+    run_route(route)
+    assert "ignore_https_errors" not in route.calls[0]
+
+
+def test_mediator_failure_is_retained_and_never_fulfilled():
+    class BrokenRoute(Route):
+        async def fetch(self, **kwargs):
+            raise RuntimeError("unable to verify the first certificate")
+
+        async def abort(self, reason):
+            assert reason == "failed"
+            self.aborted = True
+
+    ctx = Context()
+    errors = []
+    asyncio.run(policy.install_policy(ctx, ALLOWED, errors))
+    route = BrokenRoute("https://vulnerable.vulnlab.test:8443/a", [])
+    asyncio.run(ctx.callback(route))
+    assert (
+        len(errors) == 1 and tls.tls_failure(str(errors[0]), "mediator") == "authority"
+    )
+    assert route.aborted and not route.fulfilled
+
+
+network_spec = importlib.util.spec_from_file_location(
+    "network_result", Path(__file__).parents[2] / "docker/browser/network_result.py"
+)
+network = importlib.util.module_from_spec(network_spec)
+network_spec.loader.exec_module(network)
+
+
+@pytest.mark.parametrize(
+    ("error", "reason"),
+    [
+        (TimeoutError(), "connection-timeout"),
+        (ConnectionRefusedError(errno.ECONNREFUSED, "refused"), "connection-refused"),
+        (OSError(errno.ENETUNREACH, "unreachable"), "network-unreachable"),
+        (OSError(errno.EHOSTUNREACH, "unreachable"), "host-unreachable"),
+    ],
+)
+def test_only_explicit_socket_refusals_are_network_evidence(error, reason):
+    assert network.connection_refusal(error) == reason
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        FileNotFoundError(),
+        PermissionError(),
+        OSError(errno.EINVAL, "invalid"),
+        RuntimeError("tool failed"),
+    ],
+)
+def test_unexpected_socket_tool_error_is_never_isolation(error):
+    with pytest.raises(RuntimeError, match="isolation unverified"):
+        network.connection_refusal(error)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://vulnerable.vulnlab.test:8443/",
+        "https://user@vulnerable.vulnlab.test:8443/",
+        "https://forbidden.vulnlab.test:8443/",
+    ],
+)
+def test_raw_navigation_refused_before_browser_normalization(url):
+    class Page:
+        async def goto(self, *_args, **_kwargs):
+            raise AssertionError("Forbidden navigation reached the browser")
+
+    with pytest.raises(ValueError, match="not authorized"):
+        asyncio.run(policy.navigate(Page(), url, ALLOWED))
+
+
+@pytest.mark.parametrize(
+    "navigation", ["Download is starting", "net::ERR_ABORTED", "net::ERR_FAILED"]
+)
+def test_download_requires_real_event_and_exact_accept_downloads_failure(navigation):
+    assert (
+        network.download_refusal(
+            navigation,
+            "Pass 'accept_downloads=True' when you are creating your browser context.",
+        )
+        == "accept-downloads-disabled"
+    )
+
+
+@pytest.mark.parametrize(
+    ("navigation", "failure"),
+    [
+        ("net::ERR_FAILED", None),
+        ("net::ERR_FAILED", "tool failed"),
+        ("net::ERR_ABORTED", "canceled"),
+        (
+            "timeout",
+            "Pass 'accept_downloads=True' when you are creating your browser context.",
+        ),
+    ],
+)
+def test_generic_errors_and_cancellation_never_prove_download_block(
+    navigation, failure
+):
+    with pytest.raises(RuntimeError, match="prerequisite unverified"):
+        network.download_refusal(navigation, failure)
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "attachment; filename=local.txt",
+        "ATTACHMENT",
+        " attachment ; filename=local.txt",
+    ],
+)
+def test_attachment_is_not_fulfilled_by_mediator(header):
+    response = Response(200)
+    response.headers["content-disposition"] = header
+    route = Route("https://vulnerable.vulnlab.test:8443/file", [response])
+    context = Context()
+    decisions = []
+    asyncio.run(policy.install_policy(context, ALLOWED, decisions=decisions))
+    asyncio.run(context.callback(route))
+    assert decisions == ["attachment-refused-before-fulfill"]
+    assert route.aborted and not route.fulfilled and response.disposed

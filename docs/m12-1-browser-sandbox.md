@@ -7,6 +7,9 @@ La livraison dépend de `m12-vuln-002-stored-xss`, sans fusion.
 `secure-app`, main et le tag baseline sont préservés. Les essais antérieurs M12
 restent une [preuve historique de blocage](proofs/M12-browser-preflight.json).
 
+État historique de M12.1 : la connexion HTTPS au laboratoire est traitée
+séparément dans [M12.2](m12-2-browser-lab-tls.md), sans introduire de XSS.
+
 ## Cause distinguée par des contrôles différentiels
 
 Le seul message Chromium `sys_chroot` ne permettait pas de conclure. La sonde

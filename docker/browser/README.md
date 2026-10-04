@@ -1,9 +1,11 @@
-# Outillage M12.1 — sandbox et témoins locaux, sans laboratoire ni XSS
+# Outillage M12.1/M12.2 — navigateur de test dédié, aucun XSS
 
 Voir le [rapport M12.1](../../docs/m12-1-browser-sandbox.md) : adaptation chroot
 seccomp minimale, sandbox et témoins loopback réellement vérifiés. La porte
 retourne 2 pour un blocage connu ; toute autre erreur échoue explicitement.
-Le mode diagnostic permissif M12 est retiré. Aucun accès lab/TLS ou XSS autorisé.
+Le mode diagnostic permissif M12 est retiré. M12.2 ajoute une pile HTTPS dédiée ;
+voir [topologie, confiance TLS et preuves M12.2](../../docs/m12-2-browser-lab-tls.md).
+Aucun XSS autorisé.
 
 `seccomp.json` est une copie inchangée de :
 https://github.com/microsoft/playwright/blob/v1.63.0/utils/docker/seccomp_profile.json
@@ -16,6 +18,8 @@ audit du profil seccomp actuel de Docker. `seccomp.json` reste inchangé.
 de la règle chroot est retirée, avec un commentaire ; test d'équivalence stricte.
 La licence amont s'applique aux deux profils. Les contrôles noyau restent actifs.
 
-Le build copie exclusivement les fichiers explicitement nommés du contexte
-`docker/browser`, sans certificat, configuration personnelle ou profil.
-Le conteneur d'essai est non-root, sans réseau ni capacités et sans volume.
+Le build M12.1 copie les fichiers nommés ; le build M12.2 copie les modules
+Python du même contexte `docker/browser`, sans certificat ou profil.
+M12.1 conserve réseau none et aucun volume. M12.2 reste non-root sans capacités,
+sur son réseau interne browser-test, avec le seul répertoire de CA publiques
+monté en lecture seule ; aucun montage de clé privée ou session.

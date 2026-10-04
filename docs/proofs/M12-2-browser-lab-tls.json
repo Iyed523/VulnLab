@@ -1,0 +1,250 @@
+{
+  "mission": "M12.2 connected sandbox and HTTPS prerequisites only; no XSS",
+  "date": "2026-10-04",
+  "origin": "Dedicated ephemeral local Docker Desktop Linux Compose project",
+  "base_m121_sha": "43241ffb4db1c8aec5038a818f8087531ebd2cdb",
+  "environment": {
+    "desktop": "4.93.0 (240920)",
+    "engine": "29.8.1",
+    "api": "1.56",
+    "kernel": "6.18.40.1-microsoft-standard-WSL2"
+  },
+  "image": "mcr.microsoft.com/playwright/python:v1.63.0-noble@sha256:72bd171a9ffc2b4b59532aaa6210e21014d07093120dc25528870c0b840da1f0",
+  "positive_gate": {
+    "exit_code": 0,
+    "result": {
+      "sandbox_verified": true,
+      "sandbox_before": {
+        "layers": {
+          "Layer 1 Sandbox": "Namespace",
+          "PID namespaces": "Yes",
+          "Network namespaces": "Yes",
+          "Seccomp-BPF sandbox": "Yes",
+          "Seccomp-BPF sandbox supports TSYNC": "Yes"
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 2
+          },
+          {
+            "type": "renderer",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 3
+          },
+          {
+            "type": "renderer",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 3
+          },
+          {
+            "type": "renderer",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 3
+          }
+        ]
+      },
+      "sandbox_after": {
+        "layers": {
+          "Layer 1 Sandbox": "Namespace",
+          "PID namespaces": "Yes",
+          "Network namespaces": "Yes",
+          "Seccomp-BPF sandbox": "Yes",
+          "Seccomp-BPF sandbox supports TSYNC": "Yes"
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 2
+          },
+          {
+            "type": "renderer",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 3
+          },
+          {
+            "type": "renderer",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 3
+          },
+          {
+            "type": "renderer",
+            "uid": 1001,
+            "CapEff": "0",
+            "CapPrm": "0",
+            "NoNewPrivs": 1,
+            "Seccomp": 2,
+            "Seccomp_filters": 3
+          }
+        ]
+      },
+      "tls": {
+        "chromium": {
+          "trusted_correct": {
+            "status": 200,
+            "verified": true
+          },
+          "unknown_authority": {
+            "refused": "authority",
+            "response_fulfilled": false
+          },
+          "wrong_name": {
+            "refused": "name",
+            "response_fulfilled": false
+          },
+          "same_certificate_correct_name": {
+            "status": 200,
+            "verified": true
+          }
+        },
+        "mediator": {
+          "trusted_correct": {
+            "status": 200,
+            "verified": true
+          },
+          "unknown_authority": {
+            "refused": "authority",
+            "response_fulfilled": false
+          },
+          "wrong_name": {
+            "refused": "name",
+            "response_fulfilled": false
+          },
+          "same_certificate_correct_name": {
+            "status": 200,
+            "verified": true
+          }
+        }
+      },
+      "direct_internal_network": {
+        "app": "network-unreachable",
+        "db": "network-unreachable",
+        "redis": "network-unreachable"
+      },
+      "connected_witnesses": {
+        "positive_https": true,
+        "positive_websocket": true,
+        "relative_redirect": true,
+        "direct_redirect_chain_cleartext_userinfo_refused": true,
+        "websocket_refused": true,
+        "download_not_persisted": true,
+        "mediator_attachment_refused": true,
+        "service_workers_registration_blocked": true,
+        "forbidden_additional_requests": 0
+      },
+      "native_download_refusal": "accept-downloads-disabled",
+      "m121_loopback_witnesses": {
+        "positive_http": true,
+        "positive_websocket": true,
+        "allowed_http_and_relative_redirect": true,
+        "direct_denied": true,
+        "redirect_denied": true,
+        "redirect_chain_denied": true,
+        "websocket_denied": true,
+        "forbidden_http_requests_after_filter": 0,
+        "forbidden_websocket_handshakes_after_filter": 0
+      },
+      "lab_flow": {
+        "chromium_direct": {
+          "healthz": true,
+          "forms": true,
+          "stylesheet": true
+        },
+        "mediated_healthz_resources_login_own_account_logout": true,
+        "cookies_tokens_memory_only": true,
+        "idor_used": false
+      },
+      "lab_tls_verified": true,
+      "xss_allowed": false,
+      "browser": "153.0.8010.12",
+      "unknown_authority_positive_control": {
+        "untrusted_witness_positive_with_own_authority": true,
+        "both_engines": true
+      },
+      "topology": {
+        "project": "vulnlab-m12-2-browser-lab",
+        "browser_networks": [
+          "browser-test"
+        ],
+        "internal": true,
+        "published_ports": [],
+        "browser_mounts": [
+          "public-certificates-only"
+        ],
+        "internal_tcp_positive_controls": true,
+        "proxy_networks": [
+          "ingress",
+          "frontend",
+          "browser-test"
+        ]
+      },
+      "cleanup": {
+        "owned_resources_removed": true,
+        "ephemeral_keys_removed": true
+      }
+    }
+  },
+  "preserved_resources": {
+    "containers_unchanged": 11,
+    "volumes_unchanged": 3,
+    "custom_networks_unchanged": 7,
+    "network_names_unchanged": 10,
+    "builtin_network_id_changes": [
+      "bridge"
+    ]
+  },
+  "scope_limits": [
+    "No XSS introduced or executed; xss_allowed remains false",
+    "No IDOR used for the browser journey; applications unchanged",
+    "HTTP mediation is not proof of global native protocol filtering",
+    "Proxy ingress still permits possible outbound traffic",
+    "Manual redirect fulfillment keeps original visible navigation URL",
+    "No byte-by-byte volume audit; only identities and preserved states compared",
+    "Historical initial APT catalog query used unnecessary capabilities in a disposable non-browser container; reported deviation, absent from delivered solution"
+  ],
+  "source_state": "Prepared source before publication; SHA-256 of LF-normalized bytes matching Git text normalization",
+  "source_sha256_lf": {
+    "compose.browser-lab.yaml": "53a9a26549408e5e7c5ae8d77ad0b23ff088faea07b8c3e06d101ff62fdf5491",
+    "docker/browser/Dockerfile.lab": "147d0801a89578521bb12a617de4fee163e51479611a49e99faaf8ce31eb4cc7",
+    "docker/browser/network_policy.py": "fd91551ea9fc95b6bf0c942c6631410414bd9fbdd233cf8832dc71284c799263",
+    "docker/browser/lab_probe.py": "104e2a3ae5ed308dde6aa73b11245bea8663a851cce6c4a4aef5547edb8be71f",
+    "docker/browser/network_result.py": "8318b65b9a433538ae2d5bf4710aed2120f497957cae47abb269dfc27d14df54",
+    "docker/browser/tls_result.py": "b6177d2e5ff6b6ab5acce73cee7d3e46dd05fba3f6034db86f1254c9c0a360c2",
+    "docker/browser/tls_witness.py": "7ac09110e637a46c36ef486a026b7ff86ed6e5cc2aa3fdc40f4732d85ed6aaa1",
+    "docker/browser/seccomp-chroot.json": "a418fd56afc560974800176ca16b13c83109fe6088229faf3a55f8fd23f68a43",
+    "docker/browser/requirements.txt": "c285c1d79ddeb04b4a8643a2a19e9f9907a2dc4847d053571a5244b24bd20d2f",
+    "scripts/generate_browser_lab_certificates.py": "4b859a0cf11b0bd13813d3be5f4af1d0f0559c159054302517d4c770a4e6f3c5",
+    "scripts/ci/verify_browser_lab.py": "fc8f69659f817651be7ed404be14d4bed3f4bef585c12f7a8b787a6517e5cfb0",
+    ".github/workflows/ci.yml": "9414ae2572817aede5c36509da3e7628751130192422c1930b901aafd0aeeeae"
+  }
+}
